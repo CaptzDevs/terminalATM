@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "malloc.h": "c",
+        "unistd.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
