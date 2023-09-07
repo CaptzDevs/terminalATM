@@ -2,7 +2,12 @@
     "files.associations": {
         "*.ejs": "html",
         "malloc.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "sqlext.h": "c",
+        "sqlucode.h": "c",
+        "signal.h": "c",
+        "stdbool.h": "c",
+        "stdio.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
