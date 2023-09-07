@@ -8,17 +8,34 @@
 #include <time.h>   // for nanosleep
 #include <math.h>
 #include <conio.h> 
+#include <limits.h>
+#include "test.c"
+
+
 
 /* ============== CONFIG ================ */
+
+#define true 1
+#define false 0
+#define _MENU_SIZE 10
+#define _RFMENU true //refresh menu 
+
+
 int PASS_SIZE = 8;
 char PASSWORD[] = "123";
 // #define DEBUG true
 
 /* ============================== */
 
+    // Makeup data
 
-#define true 1
-#define false 0
+    int m_id = 123;
+    char m_fname[100] = "SIWAKRON";
+    char m_lname[100] = "JANSANGSRI";
+    int m_age = 21;
+
+/* ============================== */
+
 
 typedef struct Node
 {
@@ -31,33 +48,36 @@ typedef struct User
     int id;
     char fname[250];
     char lname[250];
+    int age;
 
 } user;
 
 typedef struct Account
 {
+    int AccountID;
     long double balance;
 
 } account;
 
-user Register(int id, char fname[], char lname[])
+user Register(int id, char fname[], char lname[] , int age)
 {
-
     user newUser;
-
     newUser.id = id;
     strcpy(newUser.fname, fname);
     strcpy(newUser.lname, lname);
+    newUser.age = age;
 
     return newUser;
 }
 
 /* GROBAL */
-char options[10][20] = {
+char MAIN_MENU[_MENU_SIZE][20] = {
     "Check Balance",
     "Deposit",
     "Withdraw",
-    "Transfer"};
+    "Transfer",
+    "Account Setting"
+};
 
 void renderString(char str[],int duration);
 int checkPassword();
@@ -69,10 +89,10 @@ void displayLogo();
 
 void displayMenu(int choice)
 {   
-    system("cls");
+    if(_RFMENU) system("cls");
     char(*optionPtr)[20];
     int optionIndex = 1;
-    optionPtr = &options[0];
+    optionPtr = &MAIN_MENU[0];
 
 
     displayLogo();
@@ -243,6 +263,12 @@ void displayLogo(){
     printf("\033[0m"); // Reset text attributes to default
 }
 
+void displayMenuHeader(char *menuName){
+    printf("\033[1;32m"); // Set text color to green and enable bold
+    printf("|  %s  |\n",menuName);
+    printf("\033[0m"); 
+}
+
 
 int nsleep(float time , float dec){
     struct timespec delay;
@@ -279,28 +305,28 @@ void moveUp(){
 }
 
 
-void preLoad2(){
+void preLoad2(int sleepTime){
         printf("> Initial                ");
-        loadingCircle(6);
+        loadingCircle(sleepTime);
         printf("[/] \n");
      
 
         printf("> Checking User          ");
-        loadingCircle(6);
+        loadingCircle(sleepTime);
         printf("[/] \n");
 
 
         printf("> Creating Account       ");
-        loadingCircle(6);
+        loadingCircle(sleepTime);
         printf("[/] \n");
 
         checkPassword();
         printf("> Loging In              ");
-        loadingCircle(6);
+        loadingCircle(sleepTime);
         printf("[/] \n");
 
         printf("> Checking               ");
-        loadingCircle(6);
+        loadingCircle(sleepTime);
         printf("[/] \n");
 
 }
@@ -439,16 +465,17 @@ int selectMenu(int min , int max){
     displayMenu(num);
     while (1) {
        // Arrow keys are typically represented by two characters
-            ch = getch(); // Get the second character
-            if(ch > 0){
+        ch = getch(); // Get the second character
+        if(ch > 0){
                 printf("%d",ch);
+                
+
+            if(ch <= 57 && ch >= 48){
+                num = ch-48;
+                displayMenu(num);
+            }else{
 
             switch (ch) {
-                case 48  : displayMenu(0); break;
-                case 49  : displayMenu(1); break;
-                case 50  : displayMenu(2); break;
-                case 51  : displayMenu(3); break;
-                case 52  : displayMenu(4); break;
                 case 72: // Up arrow key
                          if(num > min){
                         num -= 1;
@@ -471,11 +498,13 @@ int selectMenu(int min , int max){
                     printf("\n");
                     break;
                 }
-                    if (ch == 13) { // Check for Escape key (optional)
-                        printf("Escape key pressed\n");
-                        break;
-                    }
             }
+
+            if (ch == 13) { // Check for Escape key (optional)
+                printf("Escape key pressed\n");
+                break;
+            }
+        }
 
        /* printf("%d",num); */
     }
@@ -490,67 +519,65 @@ int selectMenu(int min , int max){
 
 int main(){
 
-  
-//     system("cls"); 
-//     printf("Selected Menu : %d",selectedMenu);
-//     checkPassword();
-//     displayLogo();
-
-
+ /*    system("cls");  */
+    displayLogo();
 //   /*   createFile();
 //     readFile(); */
+
        printf("\033[?25l"); // hide cursor
     
     if(/* insertCard() */ 1){
 
-        printf("\n=======================\n");
+   /*      printf("\n=======================\n");
 
-      /*   preLoad2(); */
+        preLoad2(2);
 
         printf("\033[1;32m\r> SUCCESS !   ");
         printf("\033[0m"); // Reset text attributes to default
 
         printf("\n=======================\n");
-        sleep(2);
-        system("cls");
+        sleep(2); */
+        //system("cls");
        //printf("\e[?25h"); // show cursor
-
-         printf("\033[1;\"Help\"p");
 
         int choice;
 
         while (1)
         {
-            choice = selectMenu(0,4);
+            
+            choice = selectMenu(0, 5); //0 - max menu's array size
             switch (choice)
             {
             case 1:
                 system("cls");
                 int n;
-                printf("Check Balance\n");
+                displayMenuHeader("Check Balance");
                 scanf("%d",&n);
                 break;
             case 2:
                 system("cls");
-                printf("Deposit\n");
+                displayMenuHeader("Deposit");
+
                 break;
             case 3:
                 system("cls");
-                printf("Withdraw\n");
+                displayMenuHeader("Withdraw");
+
                 break;
             case 4:
                 system("cls");
+                displayMenuHeader("Transfer");
+
                 break;
-                printf("Transfer\n");
             case 0:
                 system("cls");
+                printf("================ ENDED ================\n");
                 printf("Thank you!\n");
                 return 0;
             default:
                 printf("\033[1;91mInvalid choice. Please choose a valid option (1/2/3/4).\n");
                 sleep(1);
                 system("cls");
-                
             }
         }
 
