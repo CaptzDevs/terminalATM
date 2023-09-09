@@ -1,29 +1,25 @@
-#include <stdio.h>
-#include <malloc.h>
-#include <stdbool.h>
-#include <string.h>
-#include <signal.h> 
-#include <unistd.h> // for sleep function
-#include <stdlib.h> // for the system function
-#include <time.h>   // for nanosleep
-#include <math.h>
-#include <conio.h> 
-#include <limits.h>
-#include "test.c"
+#include <stdio.h>      // Standard I/O operations
+#include <stdlib.h>     // Utility functions (memory, process,sysytem)
+#include <stdbool.h>    // Boolean type and constants
+#include <string.h>     // String manipulation functions
+#include <signal.h>     // Signal handling
+#include <unistd.h>     // POSIX functions (e.g., sleep)
+#include <time.h>       // Date and time operations
+#include <math.h>       // Mathematical functions
+#include <conio.h>      // Console I/O (non-standard)
+#include <limits.h>     // Implementation-defined limits
 
+
+#include "config.c"
+#include "array.c"
+#include "account.c"
 
 
 /* ============== CONFIG ================ */
 
-#define true 1
-#define false 0
-#define _MENU_SIZE 10
-#define _RFMENU true //refresh menu 
-
 
 int PASS_SIZE = 8;
 char PASSWORD[] = "123";
-// #define DEBUG true
 
 /* ============================== */
 
@@ -71,43 +67,51 @@ user Register(int id, char fname[], char lname[] , int age)
 }
 
 /* GROBAL */
-char MAIN_MENU[_MENU_SIZE][20] = {
+/* =============== MENU SETTING ===============*/
+
+char MAIN_MENU[][50] = {
     "Check Balance",
     "Deposit",
     "Withdraw",
     "Transfer",
-    "Account Setting"
 };
+
+char ACCOUNT_MENU[_MENU_SIZE][50] = {
+    "My Account",
+    "Create New Account",
+    "Account Setting"
+
+};
+
+typedef int (*Operation)();
+typedef void (*selectedMenu)();
 
 void renderString(char str[],int duration);
 int checkPassword();
-void displayMenu(int ch);
+void displayMenu(int ch , char arr[][50] ,  char header[]);
+int selectMenu(int min , char arr[][50] ,selectedMenu fx , char header[]);
 void printfcss(int fontColor, int bgColor ,int style);
-int selectMenu(int min , int max);
 void displayLogo();
+
 /* Utililies Function */
 
-void displayMenu(int choice)
+void displayMenu(int choice , char arr[][50] , char header[])
 {   
     if(_RFMENU) system("cls");
-    char(*optionPtr)[20];
+    char(*optionPtr)[50];
     int optionIndex = 1;
-    optionPtr = &MAIN_MENU[0];
-
+    optionPtr = &arr[0];
 
     displayLogo();
-    printf("Main Menu :\n");
+    printf("%s :\n",header);
 
     while (*optionPtr[0] != '\0')
     {
-        if(choice == optionIndex){
-            printf("\033[1;32m> \033[4m"); // Set text color to green and enable bold
-        }
+        if(choice == optionIndex) printf("\033[1;32m> \033[4m");
+           
         printf("[%d] : %s\n", optionIndex, *optionPtr);
 
-        if(choice == optionIndex){
-            printf("\033[0m"); // Set text color to green and enable bold
-        }
+        if(choice == optionIndex) printf("\033[0m");
 
       /*if(choice == 1 && optionIndex == 1){
             printf(" - Hello 1 \n");
@@ -115,7 +119,6 @@ void displayMenu(int choice)
             printf(" - Hello 1 \n");
         } */
         
-
         optionPtr++;
         optionIndex++;
     }
@@ -177,7 +180,8 @@ void loadingCircle(int timeoutArg){
     }
 }
 
-typedef int (*Operation)();
+
+
 
 int asyncLoadingCircle(int timeoutArg , Operation checkFn){
 
@@ -280,13 +284,13 @@ int nsleep(float time , float dec){
 }
 
 void progressBar(){
-
-  for (int i = 0; i < 100; i++) {
+	int i,j;
+  for ( i = 0; i < 100; i++) {
             nsleep(1,7);
 
             int width = (i + 1) / 4;
             printf("\r[");
-            for (int j = 0; j < 25; j++) {
+            for ( j = 0; j < 25; j++) {
                 if (j < width) {
                     printf("#");
                 } else {
@@ -458,31 +462,34 @@ int checkPassword(){
         }
 }
 
-int selectMenu(int min , int max){
+int selectMenu(int min , char arr[][50] , selectedMenu displayMenuCallback , char header[]){
     char ch ;
     int i = 0;
     int num = 1;
-    displayMenu(num);
+    int max = lenC(arr);
+    displayMenuCallback(num , arr, header);
+
     while (1) {
        // Arrow keys are typically represented by two characters
         ch = getch(); // Get the second character
         if(ch > 0){
-                printf("%d",ch);
-                
 
+            /* printf("%d",ch); */
             if(ch <= 57 && ch >= 48){
                 num = ch-48;
-                displayMenu(num);
+                    displayMenuCallback(num , arr, header);
             }else{
 
             switch (ch) {
                 case 72: // Up arrow key
-                         if(num > min){
+                    if(num > min){
                         num -= 1;
                     }else{
                         num = max;
                     }
-                    displayMenu(num);
+                        
+                        displayMenuCallback(num , arr, header);
+
                     break;
                 case 80: // Down arrow key
                 
@@ -491,8 +498,8 @@ int selectMenu(int min , int max){
                     }else{
                         num = min;
                     }
-                   
-                    displayMenu(num);
+                    
+                    displayMenuCallback(num,arr, header);
                     break;
                 default:
                     printf("\n");
@@ -506,7 +513,7 @@ int selectMenu(int min , int max){
             }
         }
 
-       /* printf("%d",num); */
+       /* printf("Select : %d \n",num); */
     }
     
     return num;
@@ -520,6 +527,7 @@ int selectMenu(int min , int max){
 int main(){
 
  /*    system("cls");  */
+  printf("\a");
     displayLogo();
 //   /*   createFile();
 //     readFile(); */
@@ -540,34 +548,36 @@ int main(){
         //system("cls");
        //printf("\e[?25h"); // show cursor
 
-        int choice;
-
+        int choice = selectMenu(0, ACCOUNT_MENU, displayMenu , "Account Menu"); //0 - max menu's array size
+      
         while (1)
         {
-            
-            choice = selectMenu(0, 5); //0 - max menu's array size
+            choice = selectMenu(0, MAIN_MENU, displayMenu , "Main Menu"); //0 - max menu's array size
             switch (choice)
             {
             case 1:
                 system("cls");
-                int n;
                 displayMenuHeader("Check Balance");
-                scanf("%d",&n);
+                printf("Enter key to exit \n");
+                getch();
                 break;
             case 2:
                 system("cls");
                 displayMenuHeader("Deposit");
 
+                 getch();
                 break;
             case 3:
                 system("cls");
                 displayMenuHeader("Withdraw");
 
+                 getch();
                 break;
             case 4:
                 system("cls");
                 displayMenuHeader("Transfer");
 
+                 getch();
                 break;
             case 0:
                 system("cls");
