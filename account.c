@@ -284,9 +284,11 @@ List showLinkedList(UserNode *head, int choice){
 
         while (current != NULL)
         {
-            if (choice == current->data._id)
+            if (choice == current->data._id){
+
                 printf("\033[1;32m\033[4m");
                 detail = current;
+            }
 
             printf(" %-5d|", current->data._id);
 
@@ -299,6 +301,7 @@ List showLinkedList(UserNode *head, int choice){
 
             if (choice == current->data._id)
                 printf("\033[0m");
+
             current = current->next;
         }
 
