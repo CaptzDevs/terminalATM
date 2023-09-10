@@ -25,9 +25,6 @@ const char columnNameArr[10][20] = {
 int space[] = {0,15,14,5,3,50};
 
 
-
-
-
 typedef struct User
 {
     char id[14];
@@ -200,9 +197,6 @@ void appendToCSV(const char *filename, const User *userData)
         perror("Unable to open file");
         exit(1);
     }
-
-
-    
     // Write User data
 
     fprintf(file, "%s,%s,%s,%d,%s\n", userData->id,userData->fname, userData->lname, userData->age,userData->registerTime);
@@ -383,7 +377,10 @@ Table processTableCSV(const char *filename , int choice) {
     csvDataTable.numRows = currentRow-1;
     csvDataTable.numCols = fieldCount;
 
-    printf("Selected At Row : %d",choice);
+    printf("Cols            : %d \n",fieldCount);
+    printf("Rows            : %d \n",currentRow-1);
+    printf("Selected At Row : %d \n",choice);
+
     return csvDataTable;
 }
 
@@ -405,9 +402,11 @@ void generateRandomUserData(User *u) {
 
     strcpy(u->fname, firstNames[rand() % 1]);
     strcpy(u->lname, lastNames[rand() % 5]);
-
+    strcpy(u->registerTime , getCurrentTime());
     // Generate a random age between 18 and 60
     u->age = 18 + rand() % 43;
+
+    
 }
 
 
@@ -415,10 +414,10 @@ void generateRandomUserData(User *u) {
 int main(int argc, char const *argv[])
 {
 
-    User registeredUser = Register(m_id, m_fname, m_lname, m_age);
+   /*  User registeredUser = Register(m_id, m_fname, m_lname, m_age); */
 
-/*     User registeredUser;
-    generateRandomUserData(&registeredUser); */
+    User registeredUser;
+    generateRandomUserData(&registeredUser);
 
 
     printf("================ New User ============\n");
@@ -445,8 +444,6 @@ int main(int argc, char const *argv[])
 
     Table userData = processTableCSV("Users",1);
 
-    printf("Cols : %d \n",userData.numCols);
-    printf("Rows : %d \n",userData.numRows);
 
     selectRow(1,userData.numRows,"Users",processTableCSV);
 
