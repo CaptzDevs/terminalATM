@@ -10,7 +10,8 @@
         "stdio.h": "c",
         "limits.h": "c",
         "stdlib.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "time.h": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

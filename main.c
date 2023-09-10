@@ -25,11 +25,6 @@ char PASSWORD[] = "123";
 
     // Makeup data
 
-    int m_id = 123;
-    char m_fname[100] = "SIWAKRON";
-    char m_lname[100] = "JANSANGSRI";
-    int m_age = 21;
-
 /* ============================== */
 
 
@@ -39,32 +34,8 @@ typedef struct Node
     struct Node *next;
 } node;
 
-typedef struct User
-{
-    int id;
-    char fname[250];
-    char lname[250];
-    int age;
 
-} user;
 
-typedef struct Account
-{
-    int AccountID;
-    long double balance;
-
-} account;
-
-user Register(int id, char fname[], char lname[] , int age)
-{
-    user newUser;
-    newUser.id = id;
-    strcpy(newUser.fname, fname);
-    strcpy(newUser.lname, lname);
-    newUser.age = age;
-
-    return newUser;
-}
 
 /* GROBAL */
 /* =============== MENU SETTING ===============*/
@@ -98,6 +69,7 @@ void displayLogo();
 void displayMenu(int choice , char arr[][50] , char header[])
 {   
     if(_RFMENU) system("cls");
+    
     char(*optionPtr)[50];
     int optionIndex = 1;
     optionPtr = &arr[0];
