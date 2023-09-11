@@ -4,3 +4,7 @@
 #define _RFMENU true //refresh menu 
 
 #define _ADMIN_DEBUG true
+#define _SHOW_LIST_LINE true
+#define _CREAR_LIST true
+
+
