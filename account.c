@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <conio.h> // Console I/O (non-standard)
+#include <math.h>
+#include <sys/time.h>
 
 #include "config.c"
 #include "array.c"
@@ -12,6 +14,10 @@
 #define MAX_LINE_SIZE 1024
 #define MAX_FIELDS 10
 #define MAX_ROW 1000
+
+
+#define MAX_LIST_ROW 10
+
 
 const char columnNameArr[10][20] = {
     "ID",
@@ -149,9 +155,10 @@ UserNode *deleteUser(UserNode *list, int id) {
         if(del){
             printf("\033[1;32m");
             printf("\n================ Delete User ===============\n");
-            printf("user id     : %d \n", del->data._id);
-            printf("user fname  : %s \n", del->data.fname);
-            printf("user lname  : %s \n", del->data.lname);
+            printf("#       : %d \n", del->data._id);
+            printf("ID      : %s \n", del->data.id);
+            printf("fname   : %s \n", del->data.fname);
+            printf("lname   : %s \n", del->data.lname);
             printf("================ ============= ===============\n");
             printf("\033[0m");
         }
@@ -174,7 +181,6 @@ UserNode *deleteUser(UserNode *list, int id) {
         prev->next = current->next;
 
         // Free the memory of the deleted node
-        free(del);
     } else {
         // Handle the case where the node with the given ID was not found
         printf("User with ID %d not found in the list.\n", id);
@@ -185,11 +191,13 @@ UserNode *deleteUser(UserNode *list, int id) {
         if(del){
             printf("\n================ Delete User ===============\n");
             printf("\033[1;32m");
-            printf("ID     : %d \n", del->data._id);
-            printf("fname  : %s \n", del->data.fname);
-            printf("lname  : %s \n", del->data.lname);
+            printf("#       : %d \n", del->data._id);
+            printf("ID      : %s \n", del->data.id);
+            printf("fname   : %s \n", del->data.fname);
+            printf("lname   : %s \n", del->data.lname);
             printf("\033[0m");
             printf("================ ============= ===============\n");
+            free(del);
         }
 
 
@@ -203,13 +211,14 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
     char ch;
     int i = 0;
     int row = 1;
+    int page = 1;
     int currnentID;
     List rowDetail;
-    rowDetail = tableCallBack(list, row);
+    rowDetail = tableCallBack(list, row,page);
 
     currnentID = rowDetail.currentID;
     row = rowDetail.currentRow;
-    
+
     while (1)
     {
         // Arrow keys are typically represented by two characters
@@ -217,13 +226,14 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
         if (ch > 0)
         {
 
-            /* printf("%d \n",ch); */
+            printf("%d \n",ch);
 
             if (ch <= 57 && ch >= 48)
             {
                 row = ch - 48;
 
-                rowDetail = tableCallBack(list, row);
+                rowDetail = tableCallBack(list, row,page);
+
                 currnentID = rowDetail.currentID;
                 row = rowDetail.currentRow;
 
@@ -233,7 +243,8 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                 switch (ch)
                 {
                 case 72: // Up arrow key
-                    if (row > min)
+                  
+                      if (row > min)
                     {
                         row -= 1;
                     }
@@ -241,9 +252,24 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                     {
                         row = max;
                     }
-                        rowDetail = tableCallBack(list, row);
+                rowDetail = tableCallBack(list, row,page);
+
                          currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
+                       
+
+
+                    break;
+                case 75: // Up left key
+                   page -=1;
+                    rowDetail = tableCallBack(list, row,page);
+                      
+
+
+                    break;
+                       case 77: // Up right key
+                         page +=1;
+                        rowDetail = tableCallBack(list, row,page);
 
 
                     break;
@@ -257,7 +283,8 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                     {
                         row = min;
                     }
-                        rowDetail = tableCallBack(list, row);
+                rowDetail = tableCallBack(list, row,page);
+
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
                     break;
@@ -285,11 +312,13 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                             max -= 1;
 
                             getch();
-                            rowDetail = tableCallBack(list, row);
+                rowDetail = tableCallBack(list, row,page);
+
                             currnentID = rowDetail.currentID;
                             row = rowDetail.currentRow;
                         }else{
-                            rowDetail = tableCallBack(list, row);
+                rowDetail = tableCallBack(list, row,page);
+
                             currnentID = rowDetail.currentID;
                             row = rowDetail.currentRow;
                         }
@@ -440,24 +469,40 @@ void processValueCSV(const char *filename)
     fclose(file);
 }
 
-List showLinkedList(UserNode *head, int choice){
+List showLinkedList(UserNode *list, int choice , int page){
     if(_CREAR_LIST) system("cls");
 
 
+   float listSize = getListSize(list);
+    float rowPerPage = ceil(listSize/MAX_LIST_ROW) ;
+    int start = MAX_LIST_ROW*(page-1);
+    int stop =  start+MAX_LIST_ROW; 
+
+
+    printf("page %d\n",page);
 
     printf("=================== Linked List ===================\n");
+ 
+
+    if(start == 0){
+        start = 1;
+        stop = MAX_LIST_ROW;
+    }
+
+
     int i = 1;
+    
     UserNode *current = NULL , *detail = NULL;
     List userList;
-       if (head == NULL)
+       if (list == NULL)
     { // show list
         printf(" List is Empty");
         /* printf("\npress any key to continue...\n"); */
     }
     else
     {
-        current = head;
-        while (current != NULL){
+        current = list;
+        while (current != NULL && i <= stop){
 
             if (choice == i){
                 
@@ -466,7 +511,7 @@ List showLinkedList(UserNode *head, int choice){
                 userList.currentRow = i;
                 userList.currentID = current->data._id;
             }
-
+            
             if(_SHOW_LIST_LINE) printf(" %-5d|", i);
             printf(" %-5d|", current->data._id);
             printf(" %-15s|", current->data.id);
@@ -480,6 +525,37 @@ List showLinkedList(UserNode *head, int choice){
             current = current->next;
             i++;
         }
+        printf("========================\n");
+        printf("Show %d/%.0f row(s) \n",i-1 , listSize);
+
+        int max = i-1;
+        
+        printf("========================\n");
+        int p = 1;
+       /*  printf("%.2f \n",rowPerPage); */
+
+      /*  printf("%d\n",start);
+       printf("%d\n",stop);
+ */
+
+    int l = 1;
+    
+     for (p = 1; p <= rowPerPage; p)
+    {
+        for (l = 1; l < 10; l++)
+        {
+            if(page == p) printf("\033[1;32m");
+            printf(" | %-3d | ",p);
+            if(page == p) printf("\033[0m");
+            p++;
+        }
+                printf("\n");
+
+    }
+
+    
+
+        
 
         if(detail){
                printf("\n============== Detail ==============\n");
@@ -893,7 +969,10 @@ Table processCSVToLinkedList(const char *filename, int choice)
 void generateRandomUserData(User *u)
 {
     // Seed the random number generator with the current time
-    srand((unsigned int)time(NULL));
+
+       struct timeval tv;
+    gettimeofday(&tv, NULL);
+    srand(tv.tv_usec);
 
     // Generate a random ID
     for (int i = 0; i < 13; i++)
@@ -905,8 +984,8 @@ void generateRandomUserData(User *u)
      // Null-terminate the string
 
     // Generate random first name and last name
-    const char *firstNames[] = {"John", "Jane", "Michael", "Emma", "William"};
-    const char *lastNames[] = {"Smith", "Johnson", "Brown", "Davis", "Wilson"};
+       const char *firstNames[] = {"John", "Jane", "Michael", "Emma", "William", "Olivia", "David", "Sarah", "James", "Emily"};
+    const char *lastNames[] = {"Smith", "Johnson", "Brown", "Davis", "Wilson", "Anderson", "Clark", "Hall", "Lee", "Moore"};
 
     strcpy(u->fname, firstNames[rand() % 5]);
     strcpy(u->lname, lastNames[rand() % 5]);
@@ -920,10 +999,21 @@ int main(int argc, char const *argv[])
 
     /*  User registeredUser = Register(m_id, m_fname, m_lname, m_age); */
      printf("\033[?25l");
-    User registeredUser;
+    int i = 0;
+    int numUsers = 500;
+
+    User registeredUser[numUsers];
     UserNode *UserList;
-    
-    generateRandomUserData(&registeredUser);
+     
+
+  /*  while (i < numUsers)
+   {
+        generateRandomUserData(&registeredUser[i]);
+        appendToCSV("Users.csv", &registeredUser[i]);
+        i++;
+   }
+    */
+
 
 /*     printf("================ New User ============\n");
     printf("ID                  : %s \n", registeredUser.id);
@@ -932,7 +1022,7 @@ int main(int argc, char const *argv[])
     printf("Register Time       : %s \n", registeredUser.registerTime); */
 
     
-    printf("======================================\n");
+/*     printf("======================================\n");
 
        if (fileExists("Users.csv"))
     {
@@ -943,7 +1033,7 @@ int main(int argc, char const *argv[])
     {
         printf(_ADMIN_DEBUG ? "file is not exist : CREATED\n" : "");
         saveUser("Users.csv", &registeredUser);
-    }
+    } */
 
     printf("========================\n");
     printf("Table USERS \n");
