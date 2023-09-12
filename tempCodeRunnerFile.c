@@ -1,1 +1,1 @@
-rowDetail = tableCallBack(list, row,page);
+selectListRow(1, userData.numRows, UserList, showLinkedList);

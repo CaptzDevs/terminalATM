@@ -13,7 +13,7 @@
 
 #define MAX_LINE_SIZE 1024
 #define MAX_FIELDS 10
-#define MAX_ROW 1000
+#define MAX_ROW 30000
 
 
 #define MAX_LIST_ROW 10
@@ -24,7 +24,9 @@ const char columnNameArr[10][20] = {
     "First Name",
     "Last Name",
     "Age",
-    "Register Time"};
+    "AccountID",
+    "Register Time"
+    };
 
 int space[] = {0, 15, 15, 15, 15, 15};
 
@@ -84,14 +86,11 @@ typedef List (*selectedArray)();
 
 
 
-User* linkedListToArray(UserNode* head, int* arraySize) {
+User* linkedListToArray(UserNode* head,int linkSize, int* arraySize) {
     // First, count the number of nodes
-    int count = 0;
+    int count = linkSize;
     UserNode* current = head;
-    while (current != NULL) {
-        count++;
-        current = current->next;
-    }
+   
 
     // Allocate memory for the array of User structures
     User* userArray = (User*)malloc(count * sizeof(User));
@@ -651,6 +650,7 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
             if (ch == 13)
             { // Check for Escape key (optional)
                 printf("Escape key pressed\n");
+
                 break;
             }
         }
@@ -719,7 +719,7 @@ void saveUser(const char *filename, const User *userData)
         exit(1);
     }
 
-    int numColumns = 5;
+    int numColumns = 6;
     char combinedString[200] = ""; // Initialize an empty string to store the result
 
     for (int i = 0; i < numColumns; i++)
@@ -737,7 +737,8 @@ void saveUser(const char *filename, const User *userData)
     fprintf(file, strcat(combinedString, "\n"));
 
     // Write User data
-    fprintf(file, "%s,%s,%s,%d,%s\n", userData->id, userData->fname, userData->lname, userData->age, userData->registerTime);
+    fprintf(file, "%s,%s,%s,%d,%s\n", userData->id, userData->fname, userData->lname, userData->age,userData->accountID, userData->registerTime);
+
 
     // Close the file
     fclose(file);
@@ -753,7 +754,7 @@ void appendToCSV(const char *filename, const User *userData)
     }
     // Write User data
 
-    fprintf(file, "%s,%s,%s,%d,%s\n", userData->id, userData->fname, userData->lname, userData->age, userData->registerTime);
+    fprintf(file, "%s,%s,%s,%d,%s,%s\n", userData->id, userData->fname, userData->lname, userData->age,userData->accountID, userData->registerTime);
 
     // Close the file
     fclose(file);
@@ -914,6 +915,7 @@ List showLinkedList(UserNode *list, int choice , int page){
         printf(" fname          : %s \n", detail->data.fname);
         printf(" lname          : %s \n", detail->data.lname);
         printf(" age            : %d \n", detail->data.age);
+        printf(" accountID      : %s \n", detail->data.accountID);
         printf(" registerDate   : %s \n", detail->data.registerTime);
 
         /* printf("%d , %d",i,choice);
@@ -1254,7 +1256,10 @@ Table processCSVToLinkedList(const char *filename, int choice)
             if (strcmp(fieldNames[currentField + 1], columnNameArr[3]) == 0)
                 userData.age = atoi(token);
 
-            if (strcmp(fieldNames[currentField + 1], columnNameArr[4]) == 0)
+          if (strcmp(fieldNames[currentField + 1], columnNameArr[4]) == 0)
+                copyTo(userData.accountID, token, sizeof(userData.accountID));
+
+            if (strcmp(fieldNames[currentField + 1], columnNameArr[5]) == 0)
                 copyTo(userData.registerTime, token, sizeof(userData.registerTime));
 
             // Remove trailing newline character from the token, if present
@@ -1311,7 +1316,7 @@ Table processCSVToLinkedList(const char *filename, int choice)
 
     int arraySize;
 
-    userArray = linkedListToArray(userHead,&arraySize);
+    userArray = linkedListToArray(userHead,currentRow-1,&arraySize);
 
     csvDataTable.numRows = currentRow - 1;
     csvDataTable.numCols = fieldCount;
@@ -1339,6 +1344,14 @@ void generateRandomUserData(User *u)
         u->id[i] = '0' + rand() % 10;
     }
     u->id[13] = '\0';
+
+      for (int i = 0; i < 13; i++)
+    {
+        u->accountID[i] = '0' + rand() % 10;
+    }
+
+    u->id[13] = '\0';
+
     
      // Null-terminate the string
 
@@ -1357,6 +1370,8 @@ int main(int argc, char const *argv[])
 {
 
     /*  User registeredUser = Register(m_id, m_fname, m_lname, m_age); */
+  
+
      printf("\033[?25l");
     int i = 0;
     int numUsers = 500;
@@ -1365,13 +1380,16 @@ int main(int argc, char const *argv[])
     UserNode *UserList;
      
 
-  /*  while (i < numUsers)
+/*    while (i < numUsers)
    {
         generateRandomUserData(&registeredUser[i]);
         appendToCSV("Users.csv", &registeredUser[i]);
+
+
         i++;
-   }
-    */
+   } */
+   
+   
 
 
 /*     printf("================ New User ============\n");
@@ -1411,7 +1429,7 @@ int main(int argc, char const *argv[])
     UserArray = userData.array;
 
     
-    selectListRow(1, userData.numRows, UserList, showLinkedList);
+    /* selectListRow(1, userData.numRows, UserList, showLinkedList); */
 
 /*     UserNode *userF;
 
@@ -1419,10 +1437,13 @@ int main(int argc, char const *argv[])
 
     printf("> %s",userF->data.fname); */
 
+    
    
-   /*  selectArrayRow(1,userData.arraySize,UserArray,showUserArray); */
-
-
+    selectArrayRow(1,userData.arraySize,UserArray,showUserArray);
 
     return 0;
 }
+
+/* 
+Execution Time: 0.028000 seconds ARR
+ */
