@@ -849,14 +849,22 @@ List showLinkedList(UserNode *list, int choice , int page){
                 /* printf(" %-2d |\n", current->data.age); */
                 countRows++;
             }
+          
 
             if (choice == i)
                 printf("\033[0m");
+
+
+                
 
             current = current->next;
             
             i++;
             c++;
+
+              if(c == stop){
+                break;
+            }
 
         }
 
