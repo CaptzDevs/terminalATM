@@ -565,7 +565,11 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                         page -= 1;
                         
                         if(page <= 0) page = 1;
+
+
                          float flag = row%MAX_LIST_ROW;
+                         if(flag == 0) flag = MAX_LIST_ROW;
+                         
                         row = MAX_LIST_ROW*(page-1)+flag; 
 
 
@@ -578,8 +582,9 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                         {
                          float flag = row%MAX_LIST_ROW;
                          page +=1;
-                         
-                        row = MAX_LIST_ROW*(page-1)+flag; 
+                         if(flag == 0) flag = MAX_LIST_ROW;
+
+                         row = MAX_LIST_ROW*(page-1)+flag; 
 
                          rowDetail = tableCallBack(list, row,page);
                          numRows = rowDetail.numRows;
@@ -854,15 +859,14 @@ List showLinkedList(UserNode *list, int choice , int page){
             if (choice == i)
                 printf("\033[0m");
 
-
                 
 
             current = current->next;
             
             i++;
             c++;
-
-              if(c == stop){
+            
+            if(c == stop+1){
                 break;
             }
 
