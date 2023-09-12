@@ -51,7 +51,11 @@ typedef struct Table
 {
     int numRows;
     int numCols;
+    int arraySize;
     UserNode *list;
+    User *array;
+
+    
     
 } Table;
 
@@ -63,6 +67,8 @@ typedef struct List
     int currentID;
 
     struct List *list;
+    User *array;
+
 
 } List;
 
@@ -78,6 +84,41 @@ typedef Table (*selectedTable)();
 typedef List (*selectedList)();
 
 
+User* linkedListToArray(UserNode* head, int* arraySize) {
+    // First, count the number of nodes
+    int count = 0;
+    UserNode* current = head;
+    while (current != NULL) {
+        count++;
+        current = current->next;
+    }
+
+    // Allocate memory for the array of User structures
+    User* userArray = (User*)malloc(count * sizeof(User));
+    if (userArray == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy the data from nodes into the array
+    current = head;
+    for (int i = 0; i < count; i++) {
+        userArray[i] = current->data;
+        current = current->next;
+    }
+
+    *arraySize = count;
+    return userArray;
+}
+
+void showUserArray(User* userArray, int arraySize) {
+
+    printf("\n=============== User Array =================\n");
+     for (int i = 0; i < arraySize; i++) {
+        printf("User %-2d: ID=%s, Name=%s\n", i + 1, userArray[i].id, userArray[i].fname);
+    }
+
+}
 void saveLinkedListToCSV(const char *filename, UserNode *head) {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {
@@ -102,8 +143,7 @@ void saveLinkedListToCSV(const char *filename, UserNode *head) {
 int getListSize(UserNode *list){
     UserNode *current = list;
     int count = 0;
-
-    if (list == NULL){
+    if (current == NULL){
         return 0;
     }else{
         while (current)
@@ -111,6 +151,7 @@ int getListSize(UserNode *list){
             count++;
             current = current->next;
         }
+       
         return count;
     }
 } 
@@ -206,9 +247,8 @@ UserNode *deleteUser(UserNode *list, int id) {
 
 }
 
-int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
-{
-    char ch;
+int selectArrayRow(int min, int max, UserNode *list , selectedList tableCallBack){
+   char ch;
     int i = 0;
     int row = 1;
     int page = 1;
@@ -232,7 +272,6 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
             {
                 row = ch - 48;
 
-                rowDetail = tableCallBack(list, row,page);
 
                 currnentID = rowDetail.currentID;
                 row = rowDetail.currentRow;
@@ -261,7 +300,8 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
 
                     break;
                 case 75: // Up left key
-                   page -=1;
+                    page -=1;
+                    row = MAX_LIST_ROW*page; 
                     rowDetail = tableCallBack(list, row,page);
                       
 
@@ -269,6 +309,7 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                     break;
                        case 77: // Up right key
                          page +=1;
+                         row = MAX_LIST_ROW*page; 
                         rowDetail = tableCallBack(list, row,page);
 
 
@@ -285,6 +326,151 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                     }
                 rowDetail = tableCallBack(list, row,page);
 
+                        currnentID = rowDetail.currentID;
+                        row = rowDetail.currentRow;
+                    break;
+
+                    case 83: // Delete
+                       {
+
+                        char ch2;
+                        printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
+                        ch2 = getch();
+
+                        if(ch2 == 13){
+
+                            list = deleteUser(list ,currnentID);
+                            saveLinkedListToCSV("UserUpdated.csv",list);
+
+                            if(row == max){
+                                row = getListSize(list);
+                            }
+                           /*  printf("%d \n",row);
+                            printf("%d \n",max);
+                            printf("%d \n",currnentID); */
+
+
+                            max -= 1;
+
+                            getch();
+                rowDetail = tableCallBack(list, row,page);
+
+                            currnentID = rowDetail.currentID;
+                            row = rowDetail.currentRow;
+                        }else{
+                rowDetail = tableCallBack(list, row,page);
+
+                            currnentID = rowDetail.currentID;
+                            row = rowDetail.currentRow;
+                        }
+                       }
+                    break;
+                default:
+                    printf("\n");
+                    break;
+                }
+            }
+
+            if (ch == 13)
+            { // Check for Escape key (optional)
+                printf("Escape key pressed\n");
+                break;
+            }
+        }
+
+        /* printf("Select : %d \n",num); */
+    }
+
+    return row;
+
+}
+int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
+{
+    char ch;
+    int i = 0;
+    int row = 1;
+    int page = 1;
+    int currnentID;
+    float numRows = 0;
+    List rowDetail;
+    rowDetail = tableCallBack(list, row,page);
+
+    currnentID = rowDetail.currentID;
+    row = rowDetail.currentRow;
+
+    while (1)
+    {
+        // Arrow keys are typically represented by two characters
+        ch = getch(); // Get the second character
+        if (ch > 0)
+        {
+
+            printf("%d \n",ch);
+
+            if (ch <= 57 && ch >= 48)
+            {
+                row = ch - 48;
+
+
+                currnentID = rowDetail.currentID;
+                row = rowDetail.currentRow;
+
+            }
+            else
+            {
+                switch (ch)
+                {
+                case 72: // Up arrow key
+                  
+                      if (row > min)
+                    {
+                        row -= 1;
+                    }
+                    else
+                    {
+                        row = max;
+                    }
+                        rowDetail = tableCallBack(list, row,page);
+        
+                        currnentID = rowDetail.currentID;
+                        row = rowDetail.currentRow;
+
+                    break;
+
+                    case 75: // Up left key
+                        {
+                        float rowPerPage = ceil(numRows/MAX_LIST_ROW) ;
+                        page -= 1;
+                        if(page <= 0) page = 1;
+
+                        row = MAX_LIST_ROW*(page-1)+1; 
+                        
+                        rowDetail = tableCallBack(list, row,page);
+
+                        numRows = rowDetail.numRows;
+                    }
+                    break;
+                    case 77: // Up right key
+                         page +=1;
+                         row = MAX_LIST_ROW*(page-1)+1; 
+                         rowDetail = tableCallBack(list, row,page);
+                         numRows = rowDetail.numRows;
+                         float rowPerPage = ceil(numRows/MAX_LIST_ROW) ;
+                
+                        if(page >= rowPerPage) page = 0;
+
+                    break;
+                case 80: // Down arrow key
+
+                    if (row < max)
+                    {
+                        row += 1;
+                    }
+                    else
+                    {
+                        row = min;
+                    }
+                        rowDetail = tableCallBack(list, row,page);
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
                     break;
@@ -469,15 +655,15 @@ void processValueCSV(const char *filename)
     fclose(file);
 }
 
+
+
 List showLinkedList(UserNode *list, int choice , int page){
     if(_CREAR_LIST) system("cls");
 
-
-   float listSize = getListSize(list);
+    float listSize = getListSize(list);
     float rowPerPage = ceil(listSize/MAX_LIST_ROW) ;
-    int start = MAX_LIST_ROW*(page-1);
+    int start = MAX_LIST_ROW*(page-1)+1;
     int stop =  start+MAX_LIST_ROW; 
-
 
     printf("page %d\n",page);
 
@@ -489,9 +675,13 @@ List showLinkedList(UserNode *list, int choice , int page){
         stop = MAX_LIST_ROW;
     }
 
-
     int i = 1;
-    
+    int c = 1;
+   /*  printf("> %d \n",choice);
+    printf("> %d \n",start);
+    printf("> %d \n",stop); */
+
+
     UserNode *current = NULL , *detail = NULL;
     List userList;
        if (list == NULL)
@@ -510,23 +700,31 @@ List showLinkedList(UserNode *list, int choice , int page){
                 detail = current;
                 userList.currentRow = i;
                 userList.currentID = current->data._id;
+                
             }
             
+            if(c >= start){
+               /*  printf("c %-5d|", c); */
             if(_SHOW_LIST_LINE) printf(" %-5d|", i);
-            printf(" %-5d|", current->data._id);
-            printf(" %-15s|", current->data.id);
-            printf(" %-15s|", current->data.fname);
-            printf(" %-15s| \n", current->data.lname);
-            /* printf(" %-2d |\n", current->data.age); */
+                printf(" %-5d|", current->data._id);
+                printf(" %-15s|", current->data.id);
+                printf(" %-15s|", current->data.fname);
+                printf(" %-15s| \n", current->data.lname);
+                /* printf(" %-2d |\n", current->data.age); */
+            }
 
             if (choice == i)
                 printf("\033[0m");
 
             current = current->next;
             i++;
+            c++;
+
         }
+
+        /* printf("c : %d\n",c); */
         printf("========================\n");
-        printf("Show %d/%.0f row(s) \n",i-1 , listSize);
+        printf("Show %d-%d from %d/%.0f row(s) \n",start,stop,i-1 , listSize);
 
         int max = i-1;
         
@@ -539,18 +737,19 @@ List showLinkedList(UserNode *list, int choice , int page){
  */
 
     int l = 1;
+    int pageListPerRow = 10;
+    /* printf(">> %.2f \n",rowPerPage); */
     
      for (p = 1; p <= rowPerPage; p)
     {
-        for (l = 1; l < 10; l++)
+        for (l = 1; l <= pageListPerRow  && p <= rowPerPage; l++)
         {
-            if(page == p) printf("\033[1;32m");
-            printf(" | %-3d | ",p);
-            if(page == p) printf("\033[0m");
+                 if(page == p) printf("\033[1;32m");
+                printf(" | %-3d ",p);
+                if(page == p) printf("\033[0m");
             p++;
         }
                 printf("\n");
-
     }
 
     
@@ -570,7 +769,8 @@ List showLinkedList(UserNode *list, int choice , int page){
         /* printf("%d , %d",i,choice);
  */
         }
-        
+
+        userList.numRows = i-1;
         return userList;
     }
 }
@@ -832,8 +1032,8 @@ Table processCSVToLinkedList(const char *filename, int choice)
 {
     FILE *file = fopen(filename, "r");
     Table csvDataTable;
-    User userData;
-    UserNode *current = NULL;
+    User userData,*userArray;
+    UserNode *current = NULL ;
 
 
     if (!file)
@@ -957,10 +1157,17 @@ Table processCSVToLinkedList(const char *filename, int choice)
 
     fclose(file);
 
+    int arraySize;
+
+    userArray = linkedListToArray(userHead,&arraySize);
 
     csvDataTable.numRows = currentRow - 1;
     csvDataTable.numCols = fieldCount;
     csvDataTable.list = userHead;
+    csvDataTable.array = userArray;
+    csvDataTable.arraySize = arraySize;
+
+
     
     printf("\n Process User Table [/]\n");
     return csvDataTable;
@@ -1002,7 +1209,7 @@ int main(int argc, char const *argv[])
     int i = 0;
     int numUsers = 500;
 
-    User registeredUser[numUsers];
+    User registeredUser[numUsers] ;
     UserNode *UserList;
      
 
@@ -1045,8 +1252,12 @@ int main(int argc, char const *argv[])
     /* showLinkedList(UserList);
     selectRow(1, userData.numRows, "Users", processTableCSV); */
 
+    User *UserArray;
+
     Table userData = processCSVToLinkedList("Users.csv", 1);
     UserList = userData.list;
+    UserArray = userData.array;
+
     
     selectListRow(1, userData.numRows, UserList, showLinkedList);
 
@@ -1055,6 +1266,8 @@ int main(int argc, char const *argv[])
     userF = SearchUser(UserList,1);
 
     printf("> %s",userF->data.fname);
+
+    showUserArray(UserArray,userData.arraySize);
 
     return 0;
 }
