@@ -37,14 +37,15 @@ typedef struct User
     char registerTime[50];
     int age;
 
+    char accountID[14];
+
 } User;
 
 typedef struct UserNode
 {
     User data;
     struct UserNode *next;
-
-
+    
 } UserNode;
 
 typedef struct Table
@@ -54,8 +55,6 @@ typedef struct Table
     int arraySize;
     UserNode *list;
     User *array;
-
-    
     
 } Table;
 
@@ -69,7 +68,6 @@ typedef struct List
     struct List *list;
     User *array;
 
-
 } List;
 
 
@@ -82,6 +80,8 @@ int m_age = 21;
 
 typedef Table (*selectedTable)();
 typedef List (*selectedList)();
+typedef List (*selectedArray)();
+
 
 
 User* linkedListToArray(UserNode* head, int* arraySize) {
@@ -111,12 +111,124 @@ User* linkedListToArray(UserNode* head, int* arraySize) {
     return userArray;
 }
 
-void showUserArray(User* userArray, int arraySize) {
+List showUserArray(User* userArray, int arraySize, int choice , int page) {
+      if(_CREAR_LIST) system("cls");
+
 
     printf("\n=============== User Array =================\n");
-     for (int i = 0; i < arraySize; i++) {
-        printf("User %-2d: ID=%s, Name=%s\n", i + 1, userArray[i].id, userArray[i].fname);
+
+   
+    float rowPerPage = ceil((float)arraySize / MAX_LIST_ROW);
+
+    int start = MAX_LIST_ROW*(page-1)+1;
+    int stop =  page*MAX_LIST_ROW; 
+
+    printf("page %d\n",page);
+
+    User *detail = NULL;
+    List userList;
+    
+
+    if(start == 0){
+        start = 1;
+        stop = MAX_LIST_ROW;
     }
+
+    int i = start-1; // run number
+    int line = 1;
+    int c = 1; // run line that can show per page
+    int countRows = 0;
+    
+    printf("choice  > %d \n",choice);
+    printf("start   > %d \n",start);
+    printf("stop    > %d \n",stop);
+
+   
+        if(_SHOW_LIST_LINE) printf("|%-5s", "Line");
+        printf("|%-5s",  "_ID");
+        printf("|%-15s", "ID");
+        printf("|%-20s", "Fname");
+        printf("|%-20s", "Lname");
+        printf("|%-4s", "Age\n");
+        
+        printf("\n");
+
+        while (i < stop && i < arraySize){
+
+            if (choice == line){
+                
+                printf("\033[1;32m\033[4m");
+                detail = &userArray[i];
+            }
+            
+         
+
+               /*  printf("c %-5d|", c); */
+                if(_SHOW_LIST_LINE) printf("|%-5d", line);
+                printf("|%-5d", userArray[i]._id);
+                printf("|%-15s", userArray[i].id);
+                printf("|%-20s", userArray[i].fname);
+                printf("|%-20s", userArray[i].lname);
+                printf("|%-4d\n", userArray[i].age);
+
+                countRows++;
+
+            if (choice == line) printf("\033[0m");
+
+            
+            i++;
+            line++;
+            c++;
+
+    }
+
+
+        /* printf("c : %d\n",c); */
+      /*   printf("========================\n");
+        printf("Show %d row(s) (%d-%d)  from %d/%.0f row(s) \n",countRows,start,c-1,i-1 , listSize);
+ */
+        int max = i-1;
+        
+        printf("========================\n");
+        int p = 1;
+       /*  printf("%.2f \n",rowPerPage); */
+
+      /*  printf("%d\n",start);
+       printf("%d\n",stop);
+ */
+
+
+    int l = 1;
+    int pageListPerRow = 10;
+    printf(">> %.2f \n",rowPerPage);
+    
+  /*    for (p = 1; p <= rowPerPage; p++)
+    {
+        if(page == p) printf("\033[1;32m");
+        printf("|%-3d ",p);
+        if(page == p) printf("\033[0m");
+    } */
+
+    
+
+        
+
+        if(detail){
+               printf("\n============== Detail ==============\n");
+
+         printf(" #              : %d \n", detail->_id);
+         printf(" ID             : %s \n", detail->id);
+         printf(" fname          : %s \n", detail->fname);
+         printf(" lname          : %s \n", detail->lname);
+         printf(" age            : %d \n", detail->age);
+         printf(" registerDate   : %s \n", detail->registerTime);
+
+        /* printf("%d , %d",i,choice);
+ */
+        }
+
+        userList.array = userArray;
+        return userList;
 
 }
 void saveLinkedListToCSV(const char *filename, UserNode *head) {
@@ -247,17 +359,17 @@ UserNode *deleteUser(UserNode *list, int id) {
 
 }
 
-int selectArrayRow(int min, int max, UserNode *list , selectedList tableCallBack){
-   char ch;
+int selectArrayRow(int min, int max, User *list , selectedArray tableCallBack){
+  
+    char ch;
     int i = 0;
     int row = 1;
     int page = 1;
     int currnentID;
-    List rowDetail;
-    rowDetail = tableCallBack(list, row,page);
-
-    currnentID = rowDetail.currentID;
-    row = rowDetail.currentRow;
+    int flag;
+    float numRows = 0;
+    
+    tableCallBack(list,max,row,page);
 
     while (1)
     {
@@ -272,10 +384,6 @@ int selectArrayRow(int min, int max, UserNode *list , selectedList tableCallBack
             {
                 row = ch - 48;
 
-
-                currnentID = rowDetail.currentID;
-                row = rowDetail.currentRow;
-
             }
             else
             {
@@ -283,86 +391,91 @@ int selectArrayRow(int min, int max, UserNode *list , selectedList tableCallBack
                 {
                 case 72: // Up arrow key
                   
-                      if (row > min)
-                    {
-                        row -= 1;
-                    }
-                    else
-                    {
-                        row = max;
-                    }
-                rowDetail = tableCallBack(list, row,page);
+                            flag = max % MAX_LIST_ROW;
 
-                         currnentID = rowDetail.currentID;
-                        row = rowDetail.currentRow;
-                       
+                            row -= 1;
+                            if(row == 0){
+                                row = flag;
+                            }
+                            if((float) page > (float) max/MAX_LIST_ROW && row > flag){
+                                row = flag;
+                            }
 
-
+                            tableCallBack(list,max,row,page);
                     break;
-                case 75: // Up left key
-                    page -=1;
-                    row = MAX_LIST_ROW*page; 
-                    rowDetail = tableCallBack(list, row,page);
-                      
 
+                    case 75: // Up left key
+                        {
+                    
+                         page -=1;
 
+                        if(page <= 0){
+                            page = 1; 
+                        }
+                             tableCallBack(list,max,row,page);
+
+                    }
                     break;
-                       case 77: // Up right key
+                    case 77: // Up right key
+                        {
                          page +=1;
-                         row = MAX_LIST_ROW*page; 
-                        rowDetail = tableCallBack(list, row,page);
+                         
 
-
+                               tableCallBack(list,max,row,page);
+                       }
                     break;
                 case 80: // Down arrow key
 
-                    if (row < max)
+                    if (row < MAX_LIST_ROW)
                     {
                         row += 1;
                     }
                     else
                     {
-                        row = min;
+                        row = 1;
                     }
-                rowDetail = tableCallBack(list, row,page);
+                     flag = max % MAX_LIST_ROW;
 
-                        currnentID = rowDetail.currentID;
-                        row = rowDetail.currentRow;
+                    if((float) page > (float) max/MAX_LIST_ROW && row > flag){
+                        row = 1;
+                    }
+                        tableCallBack(list,max,row,page);
+                    
                     break;
 
                     case 83: // Delete
                        {
 
-                        char ch2;
+                      /*   char ch2;
                         printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
                         ch2 = getch();
 
-                        if(ch2 == 13){
 
+                        if(ch2 == 13){  
                             list = deleteUser(list ,currnentID);
                             saveLinkedListToCSV("UserUpdated.csv",list);
 
                             if(row == max){
                                 row = getListSize(list);
                             }
-                           /*  printf("%d \n",row);
+                            printf("%d \n",row);
                             printf("%d \n",max);
-                            printf("%d \n",currnentID); */
+                            printf("%d \n",currnentID);
 
 
                             max -= 1;
 
                             getch();
-                rowDetail = tableCallBack(list, row,page);
+                            rowDetail = tableCallBack(list, row,page);
 
                             currnentID = rowDetail.currentID;
                             row = rowDetail.currentRow;
                         }else{
-                rowDetail = tableCallBack(list, row,page);
+                            rowDetail = tableCallBack(list, row,page);
 
                             currnentID = rowDetail.currentID;
                             row = rowDetail.currentRow;
-                        }
+                        } */
                        }
                     break;
                 default:
@@ -422,15 +535,24 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                 {
                 case 72: // Up arrow key
                   
-                      if (row > min)
+                   if(row == MAX_LIST_ROW*(page-1)+1){
+                        row = MAX_LIST_ROW*(page);
+                    }
+                    else if (row > MAX_LIST_ROW*(page-1)+1)
                     {
                         row -= 1;
+                   
                     }
                     else
                     {
-                        row = max;
+                        row = MAX_LIST_ROW*(page);
                     }
+
+                   
+
                         rowDetail = tableCallBack(list, row,page);
+
+                        printf("%d",MAX_LIST_ROW*(page-1)+1);
         
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
@@ -441,35 +563,40 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                         {
                         float rowPerPage = ceil(numRows/MAX_LIST_ROW) ;
                         page -= 1;
-                        if(page <= 0) page = 1;
-
-                        row = MAX_LIST_ROW*(page-1)+1; 
                         
+                        if(page <= 0) page = 1;
+                         float flag = row%MAX_LIST_ROW;
+                        row = MAX_LIST_ROW*(page-1)+flag; 
+
+
                         rowDetail = tableCallBack(list, row,page);
 
                         numRows = rowDetail.numRows;
                     }
                     break;
                     case 77: // Up right key
+                        {
+                         float flag = row%MAX_LIST_ROW;
                          page +=1;
-                         row = MAX_LIST_ROW*(page-1)+1; 
+                         
+                        row = MAX_LIST_ROW*(page-1)+flag; 
+
                          rowDetail = tableCallBack(list, row,page);
                          numRows = rowDetail.numRows;
-                         float rowPerPage = ceil(numRows/MAX_LIST_ROW) ;
-                
-                        if(page >= rowPerPage) page = 0;
-
+                       }
                     break;
                 case 80: // Down arrow key
 
-                    if (row < max)
+                    if (row < MAX_LIST_ROW*(page))
                     {
                         row += 1;
                     }
                     else
                     {
-                        row = min;
+                        row = MAX_LIST_ROW*(page-1)+1;
                     }
+
+                    
                         rowDetail = tableCallBack(list, row,page);
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
@@ -482,8 +609,8 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                         printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
                         ch2 = getch();
 
-                        if(ch2 == 13){
 
+                        if(ch2 == 13){  
                             list = deleteUser(list ,currnentID);
                             saveLinkedListToCSV("UserUpdated.csv",list);
 
@@ -498,12 +625,12 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                             max -= 1;
 
                             getch();
-                rowDetail = tableCallBack(list, row,page);
+                            rowDetail = tableCallBack(list, row,page);
 
                             currnentID = rowDetail.currentID;
                             row = rowDetail.currentRow;
                         }else{
-                rowDetail = tableCallBack(list, row,page);
+                            rowDetail = tableCallBack(list, row,page);
 
                             currnentID = rowDetail.currentID;
                             row = rowDetail.currentRow;
@@ -663,7 +790,7 @@ List showLinkedList(UserNode *list, int choice , int page){
     float listSize = getListSize(list);
     float rowPerPage = ceil(listSize/MAX_LIST_ROW) ;
     int start = MAX_LIST_ROW*(page-1)+1;
-    int stop =  start+MAX_LIST_ROW; 
+    int stop =  page*MAX_LIST_ROW; 
 
     printf("page %d\n",page);
 
@@ -675,11 +802,13 @@ List showLinkedList(UserNode *list, int choice , int page){
         stop = MAX_LIST_ROW;
     }
 
-    int i = 1;
-    int c = 1;
-   /*  printf("> %d \n",choice);
-    printf("> %d \n",start);
-    printf("> %d \n",stop); */
+    int i = 1; // run number
+    int c = 1; // run line that can show per page
+    int countRows = 0;
+
+    printf("choice  > %d \n",choice);
+    printf("start   > %d \n",start);
+    printf("stop    > %d \n",stop);
 
 
     UserNode *current = NULL , *detail = NULL;
@@ -692,6 +821,13 @@ List showLinkedList(UserNode *list, int choice , int page){
     else
     {
         current = list;
+        if(_SHOW_LIST_LINE) printf("|%-5s", "Line");
+        printf("|%-5s",  "_ID");
+        printf("|%-15s", "ID");
+        printf("|%-20s", "Fname");
+        printf("|%-20s", "Lname\n");
+        printf("\n");
+
         while (current != NULL && i <= stop){
 
             if (choice == i){
@@ -705,18 +841,20 @@ List showLinkedList(UserNode *list, int choice , int page){
             
             if(c >= start){
                /*  printf("c %-5d|", c); */
-            if(_SHOW_LIST_LINE) printf(" %-5d|", i);
-                printf(" %-5d|", current->data._id);
-                printf(" %-15s|", current->data.id);
-                printf(" %-15s|", current->data.fname);
-                printf(" %-15s| \n", current->data.lname);
+                if(_SHOW_LIST_LINE) printf("|%-5d", i);
+                printf("|%-5d", current->data._id);
+                printf("|%-15s", current->data.id);
+                printf("|%-20s", current->data.fname);
+                printf("|%-20s\n", current->data.lname);
                 /* printf(" %-2d |\n", current->data.age); */
+                countRows++;
             }
 
             if (choice == i)
                 printf("\033[0m");
 
             current = current->next;
+            
             i++;
             c++;
 
@@ -724,7 +862,7 @@ List showLinkedList(UserNode *list, int choice , int page){
 
         /* printf("c : %d\n",c); */
         printf("========================\n");
-        printf("Show %d-%d from %d/%.0f row(s) \n",start,stop,i-1 , listSize);
+        printf("Show %d row(s) (%d-%d)  from %d/%.0f row(s) \n",countRows,start,c-1,i-1 , listSize);
 
         int max = i-1;
         
@@ -745,7 +883,7 @@ List showLinkedList(UserNode *list, int choice , int page){
         for (l = 1; l <= pageListPerRow  && p <= rowPerPage; l++)
         {
                  if(page == p) printf("\033[1;32m");
-                printf(" | %-3d ",p);
+                printf("|%-3d ",p);
                 if(page == p) printf("\033[0m");
             p++;
         }
@@ -768,6 +906,8 @@ List showLinkedList(UserNode *list, int choice , int page){
 
         /* printf("%d , %d",i,choice);
  */
+        }else{
+            userList.currentRow = MAX_LINE_SIZE*(page-1)+1;
         }
 
         userList.numRows = i-1;
@@ -1261,13 +1401,16 @@ int main(int argc, char const *argv[])
     
     selectListRow(1, userData.numRows, UserList, showLinkedList);
 
-    UserNode *userF;
+/*     UserNode *userF;
 
     userF = SearchUser(UserList,1);
 
-    printf("> %s",userF->data.fname);
+    printf("> %s",userF->data.fname); */
 
-    showUserArray(UserArray,userData.arraySize);
+   
+   /*  selectArrayRow(1,userData.arraySize,UserArray,showUserArray); */
+
+
 
     return 0;
 }

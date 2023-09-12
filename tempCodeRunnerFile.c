@@ -1,2 +1,1 @@
-  detail = current;
-            }
+rowDetail = tableCallBack(list, row,page);
