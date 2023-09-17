@@ -28,6 +28,12 @@ const char columnNameArr[10][20] = {
     "Register Time"
     };
 
+
+char USER_MENU[][50] = {
+    "EDIT",
+    "DELETE"
+};
+
 int space[] = {0, 15, 15, 15, 15, 15};
 
 typedef struct User
@@ -83,6 +89,117 @@ int m_age = 21;
 typedef Table (*selectedTable)();
 typedef List (*selectedList)();
 typedef List (*selectedArray)();
+typedef void (*selectedUserMenu)();
+
+
+void displayUserOption(int choice , char arr[][50] , char header[]){
+
+     if(_RFMENU) system("cls");
+    
+    char(*optionPtr)[50];
+    int optionIndex = 1;
+    optionPtr = &arr[0];
+
+    printf("%s :\n",header);
+
+    while (*optionPtr[0] != '\0')
+    {
+        if(choice == optionIndex) printf("\033[1;32m> \033[4m");
+           
+        printf("[%d] : %s\n", optionIndex, *optionPtr);
+
+        if(choice == optionIndex) printf("\033[0m");
+
+        optionPtr++;
+        optionIndex++;
+    }
+
+    if(choice == 0){
+        printf("\033[1;32m> \033[4m");
+    }
+        printf("[0] : Quit\n");
+    if(choice == 0){
+         printf("\033[0m");
+    }
+
+
+    printf("\n \033[38;5;50m( Use Arrow and Enter for Select ) \033[0m \n");
+}
+
+int selectUserMenu(int min , char arr[][50] ,selectedUserMenu displayMenuCallback , char header[]){
+    char ch ;
+    int i = 0;
+    int num = 1;
+    int max = lenC(arr);
+    displayMenuCallback(num , arr, header);
+
+    while (1) {
+       // Arrow keys are typically represented by two characters
+        ch = getch(); // Get the second character
+        if(ch > 0){
+
+            /* printf("%d",ch); */
+            if(ch <= 57 && ch >= 48){
+                num = ch-48;
+                    displayMenuCallback(num , arr, header);
+            }else{
+
+            switch (ch) {
+                case 72: // Up arrow key
+                    if(num > min){
+                        num -= 1;
+                    }else{
+                        num = max;
+                    }
+                        
+                        displayMenuCallback(num , arr, header);
+
+                    break;
+                case 80: // Down arrow key
+                
+                    if(num < max){
+                        num += 1;
+                    }else{
+                        num = min;
+                    }
+                    
+                    displayMenuCallback(num,arr, header);
+                    break;
+                default:
+                    printf("\n");
+                    break;
+                }
+            }
+// Check for Escape key (optional)
+            if (ch == 13) { 
+                if(_ADMIN_DEBUG) printf("SELECT IN USER MENU\n");
+                switch (num)
+                {
+                //Edit
+                    case 1:
+                        printf("=====================\n");
+                        printf("%s\n",USER_MENU[num-1]);
+                        printf("=====================\n");
+                    break;
+                //Delete
+                   case 2:
+                        printf("=====================\n");
+                        printf("%s\n",USER_MENU[num-1]);
+                        printf("=====================\n");
+                    break;
+                default:
+                    break;
+                }
+
+                break;
+            }
+        }
+
+       /* printf("Select : %d \n",num); */
+    }
+    
+    return num;
+};
 
 
 
@@ -266,7 +383,14 @@ int getListSize(UserNode *list){
         return count;
     }
 } 
-UserNode* SearchUser(UserNode *list , int id){
+
+User searchUser(User *userArray , int id){
+
+    return userArray[id-1];
+    
+};
+
+UserNode* SearchUserList(UserNode *list , int id){
     UserNode *current;
     current = list;
     if(!current){
@@ -605,7 +729,17 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
                     break;
+                    case 13:{
+                    
 
+                        int exitUserMenu = selectUserMenu(0,USER_MENU,displayUserOption,"User Detail");
+                        
+                        if(exitUserMenu == 0){
+                            rowDetail = tableCallBack(list, row,page);
+                        }
+
+                        break;
+                    }
                     case 83: // Delete
                        {
 
@@ -647,7 +781,7 @@ int selectListRow(int min, int max, UserNode *list , selectedList tableCallBack)
                 }
             }
 
-            if (ch == 13)
+            if (ch == 27)
             { // Check for Escape key (optional)
                 printf("Escape key pressed\n");
 
@@ -670,7 +804,8 @@ char *getCurrentTime()
     if (time_string == NULL)
     {
         fprintf(stderr, "Memory allocation failed\n");
-        exit(1); // Exit the program if memory allocation fails
+        exit(1); 
+        // Exit the program if memory allocation fails
     }
 
     // Get the current time
@@ -908,7 +1043,7 @@ List showLinkedList(UserNode *list, int choice , int page){
         
 
         if(detail){
-               printf("\n============== Detail ==============\n");
+        printf("\n============== Detail ==============\n");
 
         printf(" #              : %d \n", detail->data._id);
         printf(" ID             : %s \n", detail->data.id);
@@ -1429,17 +1564,23 @@ int main(int argc, char const *argv[])
     UserArray = userData.array;
 
     
-    /* selectListRow(1, userData.numRows, UserList, showLinkedList); */
+    selectListRow(1, userData.numRows, UserList, showLinkedList);
 
 /*     UserNode *userF;
 
-    userF = SearchUser(UserList,1);
+    userF = SearchUserList(UserList,1);
 
     printf("> %s",userF->data.fname); */
 
     
    
-    selectArrayRow(1,userData.arraySize,UserArray,showUserArray);
+    /* selectArrayRow(1,userData.arraySize,UserArray,showUserArray); */
+
+
+    User userF;
+    userF = searchUser(UserArray , 1);
+    printf("> %s \n",userF.id);
+    printf("> %s \n",userF.fname);
 
     return 0;
 }

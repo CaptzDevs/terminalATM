@@ -12,7 +12,7 @@
 
 #include "config.c"
 #include "array.c"
-#include "account.c"
+/* #include "account.c" */
 
 
 /* ============== CONFIG ================ */
