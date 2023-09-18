@@ -16,7 +16,7 @@
 #define MAX_FIELDS 10
 #define MAX_ROW 30000
 
-// Key
+// Key 
 #define EXIST_KEY 27
 #define ENTER_KEY 13
 #define DELETE_KEY 83
@@ -80,15 +80,19 @@ typedef struct List
 {
     int numRows;
     int numCols;
+
     int currentRow;
     int currentID;
-
     struct List *list;
+
+    UserNode *userData;
     User *array;
 
 } List;
 
 UserNode *userHead = NULL;
+
+UserNode *USER_LIST = NULL;
 
 char m_id[14] = "1909300007905";
 char m_fname[100] = "SIWAKORN";
@@ -109,7 +113,11 @@ int getListSize(UserNode *list);
     1. Controller Function      [C]
     2. Display Function         [D]
 */
+User editUserData(User *userArray){
 
+    printf("%s",userArray[0].fname);
+    
+}
 /* [D] */
 void displayUserMenu(int choice, char arr[][50], char header[])
 {
@@ -151,7 +159,7 @@ void displayUserMenu(int choice, char arr[][50], char header[])
 }
 
 /* [C] */
-int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback, char header[])
+int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback, char header[] , UserNode *userDetail)
 {
     char ch;
     int i = 0;
@@ -220,6 +228,63 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                     printf("=====================\n");
                     printf("%s\n", USER_MENU[num - 1]);
                     printf("=====================\n");
+                    printf("%s ",userDetail->data.id);
+                    printf("%s ",userDetail->data.fname);
+                    printf("%s ",userDetail->data.lname);
+                    printf("%d ",userDetail->data.age);
+                    printf("\n");
+                    printf("Leave it blank for not change \n");
+
+                    char nFname[250] ;
+                    char nLname[250] ;
+                    char nAge[2];
+
+                    int age = userDetail->data.age;
+
+                    strcpy(nFname , userDetail->data.fname);
+                    strcpy(nLname,userDetail->data.lname);
+
+                    sprintf(nAge, "%d", userDetail->data.age);
+
+
+                    fflush(stdin);
+
+                    printf("New First Name : ");
+                    scanf("%[^\n]%*c", nFname);
+                    printf("New Last Name : ");
+                    scanf("%[^\n]%*c", nLname);
+                    printf("New Age :");
+                    scanf("%[^\n]%*c", nAge);
+
+
+                   /*  printf("%s \n",userDetail->data.id); */
+                    printf("\n");
+                    printf("%s -> %s \n",userDetail->data.fname,nFname);
+                    printf("%s -> %s \n",userDetail->data.lname,nLname);
+                    printf("%d -> %s \n",userDetail->data.age,nAge);
+
+                    char ch2;
+                    ch2 = getch();
+
+                    switch (ch2)
+                    {
+                    case ENTER_KEY:
+                    
+                        printf("\033[1;32mUpdate Data Success \033[0m");
+                        break;
+
+                    case EXIST_KEY:
+                    
+                        printf("EXIT \n");
+                        displayMenuCallback(num, arr, header);
+
+
+                        break;
+                        
+                    default:
+                        break;
+                    }
+
                     break;
                    
                 case 2: // Delete
@@ -490,7 +555,7 @@ int selectUserArray(int min, int max, User *list, selectedArray tableCallBack)
                 }
             }
 
-            if (ch == 13)
+            if (ch == ENTER_KEY)
             { // Check for Escape key (optional)
                 printf("Escape key pressed\n");
                 break;
@@ -589,7 +654,6 @@ List displayUserList(UserNode *list, int choice, int page)
             }
         }
 
-        /* printf("c : %d\n",c); */
         printf("========================\n");
         printf("Show %d row(s) (%d-%d)  from %d/%.0f row(s) \n", countRows, start, c - 1, i - 1, listSize);
 
@@ -597,15 +661,9 @@ List displayUserList(UserNode *list, int choice, int page)
 
         printf("========================\n");
         int p = 1;
-        /*  printf("%.2f \n",rowPerPage); */
-
-        /*  printf("%d\n",start);
-         printf("%d\n",stop);
-   */
 
         int l = 1;
         int pageListPerRow = 10;
-        /* printf(">> %.2f \n",rowPerPage); */
 
         for (p = 1; p <= rowPerPage; p)
         {
@@ -633,8 +691,6 @@ List displayUserList(UserNode *list, int choice, int page)
             printf(" accountID      : %s \n", detail->data.accountID);
             printf(" registerDate   : %s \n", detail->data.registerTime);
 
-            /* printf("%d , %d",i,choice);
-             */
         }
         else
         {
@@ -642,6 +698,7 @@ List displayUserList(UserNode *list, int choice, int page)
         }
 
         userList.numRows = i - 1;
+        userList.userData =  detail;
         return userList;
     }
 }
@@ -755,8 +812,8 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
 
                 case ENTER_KEY:
                 {
-
-                    int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Detail");
+                    int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Detail",rowDetail.userData);
+                
 
                     if (exitUserMenu == 0)
                     {
@@ -1553,14 +1610,19 @@ int main(int argc, char const *argv[])
 
     User *UserArray;
 
+    //Init User List
     Table userData = processCSVToLinkedList("Users.csv", 1);
     UserList = userData.list;
     UserArray = userData.array;
+
+    USER_LIST = userData.list;
+
 
     selectUserList(1, userData.numRows, UserList, displayUserList);
 
     /* selectUserArray(1,userData.arraySize,UserArray,showUserArray); */
 
+    
     
     checkFileChange("Users.csv",1);
 /*     User userF;
