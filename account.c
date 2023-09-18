@@ -16,7 +16,7 @@
 #define MAX_FIELDS 10
 #define MAX_ROW 30000
 
-// Key 
+// Key
 #define EXIST_KEY 27
 #define ENTER_KEY 13
 #define DELETE_KEY 83
@@ -41,8 +41,8 @@ char USER_MENU[][50] = {
     "EDIT",
     "DELETE",
     "DISABLE CARD"
-    
-    };
+
+};
 
 int space[] = {0, 15, 15, 15, 15, 15};
 
@@ -93,6 +93,8 @@ typedef struct List
 UserNode *userHead = NULL;
 
 UserNode *USER_LIST = NULL;
+User *USER_ARR = NULL;
+
 
 char m_id[14] = "1909300007905";
 char m_fname[100] = "SIWAKORN";
@@ -105,18 +107,21 @@ typedef List (*selectedArray)();
 typedef void (*selectedUserMenu)();
 
 /* ============================ */
-UserNode *deleteUser(UserNode *list, int id);
+UserNode *deleteUser(int id);
 void saveLinkedListToCSV(const char *filename, UserNode *head);
 int getListSize(UserNode *list);
+User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
+int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
+List displayUserArray(User *userArray, int arraySize, int choice, int page);
 
 /* 2 Type of menu function
     1. Controller Function      [C]
     2. Display Function         [D]
 */
-User editUserData(User *userArray){
+User editUserData(User *userArray)
+{
 
-    printf("%s",userArray[0].fname);
-    
+    printf("%s", userArray[0].fname);
 }
 /* [D] */
 void displayUserMenu(int choice, char arr[][50], char header[])
@@ -159,7 +164,7 @@ void displayUserMenu(int choice, char arr[][50], char header[])
 }
 
 /* [C] */
-int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback, char header[] , UserNode *userDetail)
+int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail)
 {
     char ch;
     int i = 0;
@@ -171,9 +176,9 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
     {
         // Arrow keys are typically represented by two characters
         ch = getch(); // Get the second character
+
         if (ch > 0)
         {
-
             /* printf("%d",ch); */
             if (ch <= 57 && ch >= 48)
             {
@@ -211,15 +216,8 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
 
                     displayMenuCallback(num, arr, header);
                     break;
-                default:
-                    printf("\n");
-                    break;
-                }
-            }
-            // Enter Key
-            if (ch == ENTER_KEY)
-            {
-                if (_ADMIN_DEBUG)
+                case ENTER_KEY: // Down arrow key
+ if (_ADMIN_DEBUG)
                     printf("SELECT IN USER MENU\n");
                 switch (num)
                 {
@@ -228,24 +226,23 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                     printf("=====================\n");
                     printf("%s\n", USER_MENU[num - 1]);
                     printf("=====================\n");
-                    printf("%s ",userDetail->data.id);
-                    printf("%s ",userDetail->data.fname);
-                    printf("%s ",userDetail->data.lname);
-                    printf("%d ",userDetail->data.age);
+                    printf("%s ", userDetail->data.id);
+                    printf("%s ", userDetail->data.fname);
+                    printf("%s ", userDetail->data.lname);
+                    printf("%d ", userDetail->data.age);
                     printf("\n");
                     printf("Leave it blank for not change \n");
 
-                    char nFname[250] ;
-                    char nLname[250] ;
+                    char nFname[250];
+                    char nLname[250];
                     char nAge[2];
 
                     int age = userDetail->data.age;
 
-                    strcpy(nFname , userDetail->data.fname);
-                    strcpy(nLname,userDetail->data.lname);
+                    strcpy(nFname, userDetail->data.fname);
+                    strcpy(nLname, userDetail->data.lname);
 
                     sprintf(nAge, "%d", userDetail->data.age);
-
 
                     fflush(stdin);
 
@@ -256,12 +253,11 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                     printf("New Age :");
                     scanf("%[^\n]%*c", nAge);
 
-
-                   /*  printf("%s \n",userDetail->data.id); */
+                    /*  printf("%s \n",userDetail->data.id); */
                     printf("\n");
-                    printf("%s -> %s \n",userDetail->data.fname,nFname);
-                    printf("%s -> %s \n",userDetail->data.lname,nLname);
-                    printf("%d -> %s \n",userDetail->data.age,nAge);
+                    printf("%s -> %s \n", userDetail->data.fname, nFname);
+                    printf("%s -> %s \n", userDetail->data.lname, nLname);
+                    printf("%d -> %s \n", userDetail->data.age, nAge);
 
                     char ch2;
                     ch2 = getch();
@@ -269,40 +265,79 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                     switch (ch2)
                     {
                     case ENTER_KEY:
-                    
+
                         printf("\033[1;32mUpdate Data Success \033[0m");
+                        displayMenuCallback(num, arr, header);
+                        
                         break;
 
                     case EXIST_KEY:
-                    
+
                         printf("EXIT \n");
                         displayMenuCallback(num, arr, header);
 
-
                         break;
-                        
+
                     default:
                         break;
                     }
 
                     break;
-                   
+
                 case 2: // Delete
                     printf("=====================\n");
                     printf("%s\n", USER_MENU[num - 1]);
                     printf("=====================\n");
-                    break;
 
+                    printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
+                    char chDelete;
+                    chDelete = getch();
+                    switch (chDelete)
+                    {
+                    case ENTER_KEY:
+                    {
+                        USER_LIST = deleteUser(userDetail->data._id);
+                        saveLinkedListToCSV("Users.csv", USER_LIST);
+                        int listSize = getListSize(USER_LIST);
+                        int arrSize;
+                        USER_ARR = linkedListToArray(USER_LIST,listSize,&arrSize);
+
+                        free(userDetail);
+                        num = 0;
+                        break;
+                    }
+                    case EXIST_KEY:
+                    {
+                     printf("EXIT \n");
+                        displayMenuCallback(num, arr, header);
+                    }
+                    default:
+                        break;
+                    }
+
+                    break;
                 case 3: // Disable card
                     printf("=====================\n");
                     printf("%s\n", USER_MENU[num - 1]);
                     printf("=====================\n");
                     break;
+                case 0 : 
+                    return 0;
+                break;
                 default:
+                break;
+                }
+                    break;
+                default:
+                    printf("\n");
                     break;
                 }
-                break;
             }
+            // Enter Key
+           /*  if (ch == ENTER_KEY)
+            {
+               
+            } */
         }
 
         /* printf("Select : %d \n",num); */
@@ -569,12 +604,12 @@ int selectUserArray(int min, int max, User *list, selectedArray tableCallBack)
 }
 
 // [D]
-List displayUserList(UserNode *list, int choice, int page)
+List displayUserList(int choice, int page)
 {
     if (_CREAR_LIST)
         system("cls");
 
-    float listSize = getListSize(list);
+    float listSize = getListSize(USER_LIST);
     float rowPerPage = ceil(listSize / MAX_LIST_ROW);
     int start = MAX_LIST_ROW * (page - 1) + 1;
     int stop = page * MAX_LIST_ROW;
@@ -599,14 +634,14 @@ List displayUserList(UserNode *list, int choice, int page)
 
     UserNode *current = NULL, *detail = NULL;
     List userList;
-    if (list == NULL)
+    if (USER_LIST == NULL)
     { // show list
         printf(" List is Empty");
         /* printf("\npress any key to continue...\n"); */
     }
     else
     {
-        current = list;
+        current = USER_LIST;
         if (_SHOW_LIST_LINE)
             printf("|%-5s", "Line");
         printf("|%-5s", "_ID");
@@ -655,7 +690,14 @@ List displayUserList(UserNode *list, int choice, int page)
         }
 
         printf("========================\n");
-        printf("Show %d row(s) (%d-%d)  from %d/%.0f row(s) \n", countRows, start, c - 1, i - 1, listSize);
+        int maxRow;
+        if(start <= c-1){
+            maxRow = c-1;
+        }else if(start > c-1){
+            maxRow = start+MAX_LIST_ROW;
+        }
+
+        printf("Show %d row(s) (%d-%d)  from %d/%.0f row(s) \n", countRows, start, maxRow, i - 1, listSize);
 
         int max = i - 1;
 
@@ -690,7 +732,6 @@ List displayUserList(UserNode *list, int choice, int page)
             printf(" age            : %d \n", detail->data.age);
             printf(" accountID      : %s \n", detail->data.accountID);
             printf(" registerDate   : %s \n", detail->data.registerTime);
-
         }
         else
         {
@@ -698,13 +739,13 @@ List displayUserList(UserNode *list, int choice, int page)
         }
 
         userList.numRows = i - 1;
-        userList.userData =  detail;
+        userList.userData = detail;
         return userList;
     }
 }
 
 // [C]
-int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
+int selectUserList(int min, int max, selectedList tableCallBack)
 {
     char ch;
     int i = 0;
@@ -713,7 +754,7 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
     int currnentID;
     float numRows = 0;
     List rowDetail;
-    rowDetail = tableCallBack(list, row, page);
+    rowDetail = tableCallBack(row, page);
 
     currnentID = rowDetail.currentID;
     row = rowDetail.currentRow;
@@ -753,7 +794,7 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
                         row = MAX_LIST_ROW * (page);
                     }
 
-                    rowDetail = tableCallBack(list, row, page);
+                    rowDetail = tableCallBack(row, page);
 
                     /* printf("%d", MAX_LIST_ROW * (page - 1) + 1); */
 
@@ -776,7 +817,7 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
 
-                    rowDetail = tableCallBack(list, row, page);
+                    rowDetail = tableCallBack(row, page);
 
                     numRows = rowDetail.numRows;
                 }
@@ -790,7 +831,7 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
 
-                    rowDetail = tableCallBack(list, row, page);
+                    rowDetail = tableCallBack(row, page);
                     numRows = rowDetail.numRows;
                 }
                 break;
@@ -805,19 +846,18 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
                         row = MAX_LIST_ROW * (page - 1) + 1;
                     }
 
-                    rowDetail = tableCallBack(list, row, page);
+                    rowDetail = tableCallBack(row, page);
                     currnentID = rowDetail.currentID;
                     row = rowDetail.currentRow;
                     break;
 
                 case ENTER_KEY:
                 {
-                    int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Detail",rowDetail.userData);
-                
+                    int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Detail", rowDetail.userData);
 
                     if (exitUserMenu == 0)
                     {
-                        rowDetail = tableCallBack(list, row, page);
+                        rowDetail = tableCallBack(row, page);
                     }
 
                     break;
@@ -831,25 +871,31 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
 
                     if (ch2 == ENTER_KEY)
                     {
-                        list = deleteUser(list, currnentID);
-                        saveLinkedListToCSV("Users.csv", list);
+                        USER_LIST = deleteUser(currnentID);
+                        saveLinkedListToCSV("Users.csv", USER_LIST);
+                        int listSize = getListSize(USER_LIST);
+                        int arrSize;
+
+                        USER_ARR = linkedListToArray(USER_LIST,listSize,&arrSize);
+
+                        /* selectUserArray(1,arrSize,USER_ARR,displayUserArray); */
 
                         if (row == max)
                         {
-                            row = getListSize(list);
+                            row = getListSize(USER_LIST);
                         }
 
                         max -= 1;
 
                         getch();
-                        rowDetail = tableCallBack(list, row, page);
+                        rowDetail = tableCallBack(row, page);
 
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
                     }
                     else
                     {
-                        rowDetail = tableCallBack(list, row, page);
+                        rowDetail = tableCallBack(row, page);
 
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
@@ -877,7 +923,6 @@ int selectUserList(int min, int max, UserNode *list, selectedList tableCallBack)
 }
 
 /* Utilities Function */
-
 
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize)
 {
@@ -977,22 +1022,22 @@ UserNode *SearchUserList(UserNode *list, int id)
     return current;
 };
 
-UserNode *deleteUser(UserNode *list, int id)
+UserNode *deleteUser(int id)
 {
 
-    UserNode *head = list, *current = list, *prev = NULL, *del = NULL;
+    UserNode *head = USER_LIST, *current = USER_LIST, *prev = NULL, *del = NULL;
 
     // Handle the case where the list is empty
     if (!current)
     {
-        return list;
+        return USER_LIST;
     }
 
     // Check if the first node should be deleted
     if (current != NULL && current->data._id == id)
     {
         del = current;
-        list = current->next;
+        USER_LIST = current->next;
         free(current);
 
         if (del)
@@ -1012,7 +1057,7 @@ UserNode *deleteUser(UserNode *list, int id)
             printf("\033[38;5;50m( Any key to continue ) \033[0m \n");
         }
 
-        return list; // Return the new head of the list
+        return USER_LIST; // Return the new head of the list
     }
 
     // Search for the node with the given ID
@@ -1058,7 +1103,7 @@ UserNode *deleteUser(UserNode *list, int id)
         free(del);
     }
 
-    return list; // Return the head of the modified list
+    return USER_LIST; // Return the head of the modified list
 }
 
 char *getCurrentTime()
@@ -1107,36 +1152,46 @@ User Register(const char id[], const char fname[], const char lname[], int age)
 }
 
 /* FILES Utilities Function */
-int isFileChanged(const char *filename, time_t *lastModifiedTime) {
+int isFileChanged(const char *filename, time_t *lastModifiedTime)
+{
     struct stat fileStat;
 
     // Get the file's status (including modification time)
-    if (stat(filename, &fileStat) != 0) {
+    if (stat(filename, &fileStat) != 0)
+    {
         perror("Error getting file status");
         return -1; // Error
     }
 
     // Check if the modification time has changed
-    if (fileStat.st_mtime != *lastModifiedTime) {
+    if (fileStat.st_mtime != *lastModifiedTime)
+    {
         *lastModifiedTime = fileStat.st_mtime; // Update last modified time
-        return 1; // File has changed
+        return 1;                              // File has changed
     }
 
     return 0; // File has not changed
 }
 
-int checkFileChange(const char *filename,float interval){
+int checkFileChange(const char *filename, float interval)
+{
     time_t lastModifiedTime = 0;
     int i = 0;
-    while (1) {
+    while (1)
+    {
         int result = isFileChanged(filename, &lastModifiedTime);
 
-        if (result == -1) {
+        if (result == -1)
+        {
             return 1; // Error occurred
-        } else if (result == 1 && i != 0) {
+        }
+        else if (result == 1 && i != 0)
+        {
             printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
             return 1;
-        } else {
+        }
+        else
+        {
             printf("File has not changed.\n");
         }
 
@@ -1610,25 +1665,22 @@ int main(int argc, char const *argv[])
 
     User *UserArray;
 
-    //Init User List
+    // Init User List
     Table userData = processCSVToLinkedList("Users.csv", 1);
     UserList = userData.list;
     UserArray = userData.array;
 
     USER_LIST = userData.list;
 
-
-    selectUserList(1, userData.numRows, UserList, displayUserList);
+    selectUserList(1, userData.numRows, displayUserList);
 
     /* selectUserArray(1,userData.arraySize,UserArray,showUserArray); */
 
-    
-    
-    checkFileChange("Users.csv",1);
-/*     User userF;
-    userF = searchUser(UserArray, 1);
-    printf("> %s \n", userF.id);
-    printf("> %s \n", userF.fname); */
+    checkFileChange("Users.csv", 1);
+    /*     User userF;
+        userF = searchUser(UserArray, 1);
+        printf("> %s \n", userF.id);
+        printf("> %s \n", userF.fname); */
     getch();
     return 0;
 }
