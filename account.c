@@ -106,17 +106,24 @@ typedef List (*selectedArray)();
 typedef void (*selectedUserMenu)();
 
 /* ============================ */
-UserNode *deleteUser(int id);
 void saveLinkedListToCSV(const char *filename, UserNode *head);
 int getListSize(UserNode *list);
-User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
+int getStringInput(char *input, int maxSize);
 int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
-int getStringInput(char *input, int maxSize);
+User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
+UserNode *deleteUser(int id);
+
+
+
+
+/* ============================ */
+
 /* 2 Type of menu function
     1. Controller Function      [C]
     2. Display Function         [D]
 */
+
 UserNode* editUserData(UserNode *userDetail)
 {
 
@@ -990,7 +997,8 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
     while (current != NULL)
     {
         User user = current->data;
-        fprintf(file, "%s,%s,%s,%d,%s", user.id, user.fname, user.lname, user.age, user.registerTime);
+
+        fprintf(file, "%s,%s,%s,%d,%s,%s", user.id, user.fname, user.lname, user.age,user.accountID, user.registerTime);
         current = current->next;
     }
 
@@ -1258,7 +1266,7 @@ void saveUser(const char *filename, const User *userData)
     fprintf(file, strcat(combinedString, "\n"));
 
     // Write User data
-    fprintf(file, "%s,%s,%s,%d,%s\n", userData->id, userData->fname, userData->lname, userData->age, userData->accountID, userData->registerTime);
+    fprintf(file, "%s,%s,%s,%d,%s,%s\n", userData->id, userData->fname, userData->lname, userData->age, userData->accountID, userData->registerTime);
 
     // Close the file
     fclose(file);
