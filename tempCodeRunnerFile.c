@@ -1,1 +1,3 @@
- USER_ARR = linkedListToArray(USER_LIST,listSize,arrSize);
+struct tm *localTime;
+
+                    localTime = localtime(&lastestTime);

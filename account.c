@@ -90,7 +90,6 @@ typedef struct List
 
 } List;
 
-UserNode *userHead = NULL;
 
 UserNode *USER_LIST = NULL;
 User *USER_ARR = NULL;
@@ -108,14 +107,19 @@ typedef void (*selectedUserMenu)();
 /* ============================ */
 void saveLinkedListToCSV(const char *filename, UserNode *head);
 int getListSize(UserNode *list);
+int checkFileChange(const char *filename, float interval);
+int checkFileChangeOnce(const char *filename);
+
 int getStringInput(char *input, int maxSize);
 int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
 UserNode *deleteUser(int id);
+Table processCSVToLinkedList(const char *filename, int choice);
 
 
 
+time_t lastestTime;
 
 /* ============================ */
 
@@ -826,6 +830,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                         row = MAX_LIST_ROW * (page);
                     }
 
+                    checkFileChangeOnce("Users.csv");
                     rowDetail = tableCallBack(row, page);
 
                     /* printf("%d", MAX_LIST_ROW * (page - 1) + 1); */
@@ -837,6 +842,8 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                 case LEFT_KEY: // Up left key
                 {
+                    checkFileChangeOnce("Users.csv");
+
                     float rowPerPage = ceil(numRows / MAX_LIST_ROW);
                     page -= 1;
 
@@ -849,19 +856,23 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
 
+                    
                     rowDetail = tableCallBack(row, page);
-
                     numRows = rowDetail.numRows;
+                    
                 }
                 break;
                 case RIGHT_KEY: // Up right key
                 {
+                    checkFileChangeOnce("Users.csv");
+
                     float flag = row % MAX_LIST_ROW;
                     page += 1;
                     if (flag == 0)
                         flag = MAX_LIST_ROW;
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
+
 
                     rowDetail = tableCallBack(row, page);
                     numRows = rowDetail.numRows;
@@ -878,9 +889,15 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                         row = MAX_LIST_ROW * (page - 1) + 1;
                     }
 
+
+                    checkFileChangeOnce("Users.csv");
+
                     rowDetail = tableCallBack(row, page);
                     currnentID = rowDetail.currentID;
                     row = rowDetail.currentRow;
+                   
+
+
                     break;
 
                 case ENTER_KEY:
@@ -1234,6 +1251,33 @@ int checkFileChange(const char *filename, float interval)
     }
 }
 
+int checkFileChangeOnce(const char *filename)
+{
+ 
+        time_t lastModifiedTime = 0;
+        int result = isFileChanged(filename, &lastModifiedTime);
+
+          
+            // Print the current time in a human-readable format
+            printf("Program started at: %s", ctime(&lastestTime));
+            printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
+            if(lastModifiedTime >= lastestTime){
+                printf("Loading New Data");
+                     struct tm *localTime;
+                    time(&lastestTime);
+                    localTime = localtime(&lastestTime);
+
+                    USER_LIST = NULL;
+                    Table userData = processCSVToLinkedList("Users.csv", 1);
+                    USER_LIST = userData.list;
+
+            }else{
+                printf("Not Change");
+            }
+            return 1;
+}
+
+
 int fileExists(const char *filename)
 {
     return access(filename, F_OK) != -1;
@@ -1299,8 +1343,9 @@ Table processTableCSV(const char *filename, int choice)
     FILE *file = fopen(filename, "r");
     Table csvDataTable;
     User userData;
-
+    UserNode *userHead = NULL;
     UserNode *current = NULL;
+
 
     printf("\n=================== User Table ===================\n");
 
@@ -1473,6 +1518,7 @@ Table processCSVToLinkedList(const char *filename, int choice)
     Table csvDataTable;
     User userData, *userArray;
     UserNode *current = NULL;
+    UserNode *userHead = NULL;
 
     if (!file)
     {
@@ -1650,6 +1696,16 @@ int main(int argc, char const *argv[])
 {
 
     /*  User registeredUser = Register(m_id, m_fname, m_lname, m_age); */
+    struct tm *localTime;
+    // Get the current time
+    time(&lastestTime);
+    localTime = localtime(&lastestTime);
+
+    // Print the current time in a human-readable format
+    printf("Program started at: %s", asctime(localTime));
+
+
+    getch();
 
     printf("\033[?25l");
     int i = 0;
