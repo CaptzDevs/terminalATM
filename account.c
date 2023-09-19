@@ -95,7 +95,6 @@ UserNode *userHead = NULL;
 UserNode *USER_LIST = NULL;
 User *USER_ARR = NULL;
 
-
 char m_id[14] = "1909300007905";
 char m_fname[100] = "SIWAKORN";
 char m_lname[100] = "JANSANGSRI";
@@ -113,23 +112,84 @@ int getListSize(UserNode *list);
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
 int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
-
+int getStringInput(char *input, int maxSize);
 /* 2 Type of menu function
     1. Controller Function      [C]
     2. Display Function         [D]
 */
-User editUserData(User *userArray)
+UserNode* editUserData(UserNode *userDetail)
 {
 
-    printf("%s", userArray[0].fname);
+    printf("ID           %-5s %s \n", ":", userDetail->data.id);
+    printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
+    printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
+    printf("Age          %-5s %d\n", ":", userDetail->data.age);
+    printf("\n");
+    printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
+
+    char nFname[250];
+    char nLname[250];
+    char nAge[5];
+
+    int age = userDetail->data.age;
+
+    strcpy(nFname, userDetail->data.fname);
+    strcpy(nLname, userDetail->data.lname);
+    sprintf(nAge, "%d", userDetail->data.age);
+
+    fflush(stdin);
+
+    printf("New First Name : ");
+    printf("\033[38;5;75m");
+    int lFname = getStringInput(nFname, sizeof(nFname));
+    printf("\033[0m");
+    printf("New Last Name : ");
+    printf("\033[38;5;75m");
+    int lLname = getStringInput(nLname, sizeof(nLname));
+    printf("\033[0m");
+
+    printf("New Age : ");
+    printf("\033[38;5;75m");
+    int lAge = getStringInput(nAge, sizeof(nAge));
+    printf("\033[0m");
+
+    /*  printf("%d %d %d",lFname,lLname,lAge); */
+
+    if (lFname == 1)
+        strcpy(nFname, userDetail->data.fname);
+    if (lLname == 1)
+        strcpy(nLname, userDetail->data.lname);
+    if (lAge == 1)
+        sprintf(nAge, "%d", userDetail->data.age);
+
+    printf("\n");
+    printf("Check new data \n");
+    printf("=====================================\n");
+    printf("%-15s -> %s \n", userDetail->data.fname, nFname);
+    printf("%-15s -> %s \n", userDetail->data.lname, nLname);
+    printf("%-15d -> %s \n", userDetail->data.age, nAge);
+    printf("=====================================\n");
+
+    printf("Commit the change ? \n");
+    printf("\033[1;32m > Enter  |   Save \n");
+    printf("\033[1;31m > ESC    |   Discard \n");
+    printf("\033[0m");
+
+    strcpy(userDetail->data.fname, nFname);
+    strcpy(userDetail->data.lname, nLname);
+    userDetail->data.age = atoi(nAge);
+
+    return userDetail;
 }
 
-int getStringInput(char *input, int maxSize) {
+int getStringInput(char *input, int maxSize)
+{
     fgets(input, maxSize, stdin);
 
     // Remove the newline character from the end of the string
     int length = strlen(input);
-    if (length > 0 && input[length - 1] == '\n') {
+    if (length > 0 && input[length - 1] == '\n')
+    {
         input[length - 1] = '\0';
     }
 
@@ -183,7 +243,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
     int i = 0;
     int num = 1;
     int max = lenC(arr);
-    
+
     displayMenuCallback(num, arr, header);
 
     while (1)
@@ -231,154 +291,97 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                     displayMenuCallback(num, arr, header);
                     break;
                 case ENTER_KEY: // Down arrow key
- if (_ADMIN_DEBUG)
-                    printf("SELECT IN USER MENU\n");
-                switch (num)
-                {
-                    // Edit
-                case 1:
-                    printf("===============================\n");
-                    printf("\t   %s\n", USER_MENU[num - 1]);
-                    printf("===============================\n");
+                    if (_ADMIN_DEBUG)
+                        printf("SELECT IN USER MENU\n");
 
-
-                    printf("ID           %-5s %s \n",":", userDetail->data.id);
-                    printf("FirstName    %-5s %s \n",":", userDetail->data.fname);
-                    printf("Lastname     %-5s %s \n",":", userDetail->data.lname);
-                    printf("Age          %-5s %d\n",":", userDetail->data.age);
-                    printf("\n");
-                    printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
-
-                    char nFname[250];
-                    char nLname[250];
-                    char nAge[5];
-
-                    int age = userDetail->data.age;
-
-                    strcpy(nFname, userDetail->data.fname);
-                    strcpy(nLname, userDetail->data.lname);
-                    sprintf(nAge, "%d", userDetail->data.age);
-
-                    fflush(stdin);
-
-                    printf("New First Name : ");
-                    printf("\033[38;5;75m");
-                    int lFname = getStringInput(nFname,sizeof(nFname));
-                    printf("\033[0m");
-                    printf("New Last Name : ");
-                    printf("\033[38;5;75m");
-                    int lLname = getStringInput(nLname,sizeof(nLname));
-                    printf("\033[0m");
-
-                    printf("New Age : ");
-                    printf("\033[38;5;75m");
-                    int lAge = getStringInput(nAge,sizeof(nAge));
-                    printf("\033[0m");
-
-
-
-                   /*  printf("%d %d %d",lFname,lLname,lAge); */
-
-                    if(lFname == 1) strcpy(nFname, userDetail->data.fname);
-                    if(lLname == 1) strcpy(nLname, userDetail->data.lname);
-                    if(lAge == 1) sprintf(nAge, "%d", userDetail->data.age);
-
-
-                    printf("\n");
-                    printf("Check new data \n");
-                    printf("=====================================\n");
-                    printf("%-15s -> %s \n", userDetail->data.fname, nFname);
-                    printf("%-15s -> %s \n", userDetail->data.lname, nLname);
-                    printf("%-15d -> %s \n", userDetail->data.age, nAge);
-                    printf("=====================================\n");
-
-                    printf("Commit the change ? \n");
-                    printf("\033[1;32m > Enter  |   Save \n");
-                    printf("\033[1;31m > ESC    |   Discard \n");
-                    printf("\033[0m");
-
-                    strcpy( userDetail->data.fname,nFname);
-                    strcpy( userDetail->data.lname,nLname);
-                    userDetail->data.age = atoi(nAge);
-
-                    char ch2;
-                    ch2 = getch();
-
-                    switch (ch2)
+                    switch (num)
                     {
-                    case ENTER_KEY:
+                        // Edit
+                    case 1:
+                        printf("===============================\n");
+                        printf("\t   %s\n", USER_MENU[num - 1]);
+                        printf("===============================\n");
 
-                        saveLinkedListToCSV("Users.csv", USER_LIST);
-                        int listSize = getListSize(USER_LIST);
-                        int arrSize;
+                        editUserData(userDetail);
 
-                        USER_ARR = linkedListToArray(USER_LIST,listSize,&arrSize);
-                        printf("=====================================\n");
-                        printf("\033[1;32m> Update Data Success \n\033[0m");
-                        printf("=====================================\n");
+                        char ch2;
+                        ch2 = getch();
 
-                        getch();
-                        displayMenuCallback(num, arr, header);
+                        switch (ch2)
+                        {
+                        case ENTER_KEY:
 
-                        /* printf("%s %s",USER_ARR[0].fname , USER_ARR[0].lname); */
+                            saveLinkedListToCSV("Users.csv", USER_LIST);
+                            int listSize = getListSize(USER_LIST);
+                            int arrSize;
+
+                            USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
+                            printf("=====================================\n");
+                            printf("\033[1;32m> Update Data Success \n\033[0m");
+                            printf("=====================================\n");
+
+                            getch();
+                            displayMenuCallback(num, arr, header);
+
+                            /* printf("%s %s",USER_ARR[0].fname , USER_ARR[0].lname); */
+                            break;
+
+                        case EXIST_KEY:
+
+                            printf("EXIT \n");
+                            displayMenuCallback(num, arr, header);
+
+                            break;
+
+                        default:
+                            break;
+                        }
+
                         break;
 
-                    case EXIST_KEY:
+                    case 2: // Delete
+                        printf("=====================\n");
+                        printf("%s\n", USER_MENU[num - 1]);
+                        printf("=====================\n");
 
-                        printf("EXIT \n");
-                        displayMenuCallback(num, arr, header);
+                        printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
+                        char chDelete;
+                        chDelete = getch();
+                        switch (chDelete)
+                        {
+                        case ENTER_KEY:
+                        {
+                            USER_LIST = deleteUser(userDetail->data._id);
+                            saveLinkedListToCSV("Users.csv", USER_LIST);
+                            int listSize = getListSize(USER_LIST);
+                            int arrSize;
+                            USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
+
+                            free(userDetail);
+                            num = 0;
+                            break;
+                        }
+                        case EXIST_KEY:
+                        {
+                            printf("EXIT \n");
+                            displayMenuCallback(num, arr, header);
+                        }
+                        default:
+                            break;
+                        }
 
                         break;
-
+                    case 3: // Disable card
+                        printf("=====================\n");
+                        printf("%s\n", USER_MENU[num - 1]);
+                        printf("=====================\n");
+                        break;
+                    case 0:
+                        return 0;
+                        break;
                     default:
                         break;
                     }
-
-                    break;
-
-                case 2: // Delete
-                    printf("=====================\n");
-                    printf("%s\n", USER_MENU[num - 1]);
-                    printf("=====================\n");
-
-                    printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
-                    char chDelete;
-                    chDelete = getch();
-                    switch (chDelete)
-                    {
-                    case ENTER_KEY:
-                    {
-                        USER_LIST = deleteUser(userDetail->data._id);
-                        saveLinkedListToCSV("Users.csv", USER_LIST);
-                        int listSize = getListSize(USER_LIST);
-                        int arrSize;
-                        USER_ARR = linkedListToArray(USER_LIST,listSize,&arrSize);
-
-                        free(userDetail);
-                        num = 0;
-                        break;
-                    }
-                    case EXIST_KEY:
-                    {
-                     printf("EXIT \n");
-                        displayMenuCallback(num, arr, header);
-                    }
-                    default:
-                        break;
-                    }
-
-                    break;
-                case 3: // Disable card
-                    printf("=====================\n");
-                    printf("%s\n", USER_MENU[num - 1]);
-                    printf("=====================\n");
-                    break;
-                case 0 : 
-                    return 0;
-                break;
-                default:
-                break;
-                }
                     break;
                 default:
                     printf("\n");
@@ -386,10 +389,10 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                 }
             }
             // Enter Key
-           /*  if (ch == ENTER_KEY)
-            {
-               
-            } */
+            /*  if (ch == ENTER_KEY)
+             {
+
+             } */
         }
 
         /* printf("Select : %d \n",num); */
@@ -508,7 +511,6 @@ List displayUserArray(User *userArray, int arraySize, int choice, int page)
 
         printf("==================  =================\n");
 
-
         /* printf("%d , %d",i,choice);
          */
     }
@@ -603,42 +605,6 @@ int selectUserArray(int min, int max, User *list, selectedArray tableCallBack)
                     tableCallBack(list, max, row, page);
 
                     break;
-
-                case 83: // Delete
-                {
-
-                    /*   char ch2;
-                      printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
-                      ch2 = getch();
-
-
-                      if(ch2 == 13){
-                          list = deleteUser(list ,currnentID);
-                          saveLinkedListToCSV("UserUpdated.csv",list);
-
-                          if(row == max){
-                              row = getListSize(list);
-                          }
-                          printf("%d \n",row);
-                          printf("%d \n",max);
-                          printf("%d \n",currnentID);
-
-
-                          max -= 1;
-
-                          getch();
-                          rowDetail = tableCallBack(list, row,page);
-
-                          currnentID = rowDetail.currentID;
-                          row = rowDetail.currentRow;
-                      }else{
-                          rowDetail = tableCallBack(list, row,page);
-
-                          currnentID = rowDetail.currentID;
-                          row = rowDetail.currentRow;
-                      } */
-                }
-                break;
                 default:
                     printf("\n");
                     break;
@@ -746,10 +712,13 @@ List displayUserList(int choice, int page)
 
         printf("========================\n");
         int maxRow;
-        if(start <= c-1){
-            maxRow = c-1;
-        }else if(start > c-1){
-            maxRow = start+MAX_LIST_ROW;
+        if (start <= c - 1)
+        {
+            maxRow = c - 1;
+        }
+        else if (start > c - 1)
+        {
+            maxRow = start + MAX_LIST_ROW;
         }
 
         printf("Show %d row(s) (%d-%d)  from %d/%.0f row(s) \n", countRows, start, maxRow, i - 1, listSize);
@@ -788,8 +757,6 @@ List displayUserList(int choice, int page)
             printf(" accountID      : %s \n", detail->data.accountID);
             printf(" registerDate   : %s \n", detail->data.registerTime);
             printf("=====================================\n");
-
-            
         }
         else
         {
@@ -934,7 +901,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                         int listSize = getListSize(USER_LIST);
                         int arrSize;
 
-                        USER_ARR = linkedListToArray(USER_LIST,listSize,&arrSize);
+                        USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
 
                         /* selectUserArray(1,arrSize,USER_ARR,displayUserArray); */
 
