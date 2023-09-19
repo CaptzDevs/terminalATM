@@ -123,6 +123,19 @@ User editUserData(User *userArray)
 
     printf("%s", userArray[0].fname);
 }
+
+int getStringInput(char *input, int maxSize) {
+    fgets(input, maxSize, stdin);
+
+    // Remove the newline character from the end of the string
+    int length = strlen(input);
+    if (length > 0 && input[length - 1] == '\n') {
+        input[length - 1] = '\0';
+    }
+
+    return length;
+}
+
 /* [D] */
 void displayUserMenu(int choice, char arr[][50], char header[])
 {
@@ -170,6 +183,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
     int i = 0;
     int num = 1;
     int max = lenC(arr);
+    
     displayMenuCallback(num, arr, header);
 
     while (1)
@@ -223,41 +237,69 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                 {
                     // Edit
                 case 1:
-                    printf("=====================\n");
-                    printf("%s\n", USER_MENU[num - 1]);
-                    printf("=====================\n");
-                    printf("%s ", userDetail->data.id);
-                    printf("%s ", userDetail->data.fname);
-                    printf("%s ", userDetail->data.lname);
-                    printf("%d ", userDetail->data.age);
+                    printf("===============================\n");
+                    printf("\t   %s\n", USER_MENU[num - 1]);
+                    printf("===============================\n");
+
+
+                    printf("ID           %-5s %s \n",":", userDetail->data.id);
+                    printf("FirstName    %-5s %s \n",":", userDetail->data.fname);
+                    printf("Lastname     %-5s %s \n",":", userDetail->data.lname);
+                    printf("Age          %-5s %d\n",":", userDetail->data.age);
                     printf("\n");
-                    printf("Leave it blank for not change \n");
+                    printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
 
                     char nFname[250];
                     char nLname[250];
-                    char nAge[2];
+                    char nAge[5];
 
                     int age = userDetail->data.age;
 
                     strcpy(nFname, userDetail->data.fname);
                     strcpy(nLname, userDetail->data.lname);
-
                     sprintf(nAge, "%d", userDetail->data.age);
 
                     fflush(stdin);
 
                     printf("New First Name : ");
-                    scanf("%[^\n]%*c", nFname);
+                    printf("\033[38;5;75m");
+                    int lFname = getStringInput(nFname,sizeof(nFname));
+                    printf("\033[0m");
                     printf("New Last Name : ");
-                    scanf("%[^\n]%*c", nLname);
-                    printf("New Age :");
-                    scanf("%[^\n]%*c", nAge);
+                    printf("\033[38;5;75m");
+                    int lLname = getStringInput(nLname,sizeof(nLname));
+                    printf("\033[0m");
 
-                    /*  printf("%s \n",userDetail->data.id); */
+                    printf("New Age : ");
+                    printf("\033[38;5;75m");
+                    int lAge = getStringInput(nAge,sizeof(nAge));
+                    printf("\033[0m");
+
+
+
+                   /*  printf("%d %d %d",lFname,lLname,lAge); */
+
+                    if(lFname == 1) strcpy(nFname, userDetail->data.fname);
+                    if(lLname == 1) strcpy(nLname, userDetail->data.lname);
+                    if(lAge == 1) sprintf(nAge, "%d", userDetail->data.age);
+
+
                     printf("\n");
-                    printf("%s -> %s \n", userDetail->data.fname, nFname);
-                    printf("%s -> %s \n", userDetail->data.lname, nLname);
-                    printf("%d -> %s \n", userDetail->data.age, nAge);
+                    printf("Check new data \n");
+                    printf("=====================================\n");
+                    printf("%-15s -> %s \n", userDetail->data.fname, nFname);
+                    printf("%-15s -> %s \n", userDetail->data.lname, nLname);
+                    printf("%-15d -> %s \n", userDetail->data.age, nAge);
+                    printf("=====================================\n");
+
+                    printf("Commit the change ? \n");
+                    printf("\033[1;32m > Enter  |   Save \n");
+                    printf("\033[1;31m > ESC    |   Discard \n");
+                    printf("\033[0m");
+
+                    strcpy( userDetail->data.fname,nFname);
+                    strcpy( userDetail->data.lname,nLname);
+                    userDetail->data.age = atoi(nAge);
 
                     char ch2;
                     ch2 = getch();
@@ -266,9 +308,19 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                     {
                     case ENTER_KEY:
 
-                        printf("\033[1;32mUpdate Data Success \033[0m");
+                        saveLinkedListToCSV("Users.csv", USER_LIST);
+                        int listSize = getListSize(USER_LIST);
+                        int arrSize;
+
+                        USER_ARR = linkedListToArray(USER_LIST,listSize,&arrSize);
+                        printf("=====================================\n");
+                        printf("\033[1;32m> Update Data Success \n\033[0m");
+                        printf("=====================================\n");
+
+                        getch();
                         displayMenuCallback(num, arr, header);
-                        
+
+                        /* printf("%s %s",USER_ARR[0].fname , USER_ARR[0].lname); */
                         break;
 
                     case EXIST_KEY:
@@ -453,6 +505,9 @@ List displayUserArray(User *userArray, int arraySize, int choice, int page)
         printf(" lname          : %s \n", detail->lname);
         printf(" age            : %d \n", detail->age);
         printf(" registerDate   : %s \n", detail->registerTime);
+
+        printf("==================  =================\n");
+
 
         /* printf("%d , %d",i,choice);
          */
@@ -732,6 +787,9 @@ List displayUserList(int choice, int page)
             printf(" age            : %d \n", detail->data.age);
             printf(" accountID      : %s \n", detail->data.accountID);
             printf(" registerDate   : %s \n", detail->data.registerTime);
+            printf("=====================================\n");
+
+            
         }
         else
         {
