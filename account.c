@@ -991,7 +991,7 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
         return;
     }
     // Write the header line
-    fprintf(file, "ID,First Name,Last Name,Age,Register Time\n");
+    fprintf(file, "ID,First Name,Last Name,Age,AccountID,Register Time\n");
 
     UserNode *current = head;
     while (current != NULL)
