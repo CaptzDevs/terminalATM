@@ -31,17 +31,15 @@
 
 // Money Color \033[38;5;48m
 
-
 #define USERS_DATA "./Data/Users.csv"
 #define ACCOUNTS_DATA "./Data/Accounts.csv"
 
 
-char USER_MENU[][50] = {
+char *USER_MENU[] = {
     "EDIT",
     "DELETE",
     "ACTIVE && SUSPEND CARD",
-    "ENABLE && DISABLE CARD",
-
+    "ENABLE && DISABLE CARD"
 };
 
 const char *FIELD_NAME[] = {
@@ -70,6 +68,10 @@ const char *FIELD_TYPE[] = {
 
 const int FIELD_NAME_SIZE = sizeof(FIELD_NAME) / sizeof(FIELD_NAME[0]);
 const int FIELD_TYPE_SIZE = sizeof(FIELD_TYPE) / sizeof(FIELD_TYPE[0]);
+
+const int USER_MENU_SIZE = sizeof(USER_MENU) / sizeof(USER_MENU[0]);
+
+
 
 
 
@@ -236,29 +238,51 @@ int getStringInput(char *input, int maxSize)
 }
 
 /* [D] */
-void displayUserMenu(int choice, char arr[][50], char header[])
+void displayUserMenu(int choice, char *arr[], char header[] ,UserNode* userDetail)
 {
 
     if (_RFMENU)
         system("cls");
 
-    char(*optionPtr)[50];
+    printf("\n============== User Detail ==============\n");
+
+    printf(" #              : %d \n", userDetail->data._id);
+    printf(" ID             : %s \n", userDetail->data.id);
+    printf(" fname          : %s \n", userDetail->data.fname);
+    printf(" lname          : %s \n", userDetail->data.lname);
+    printf(" age            : %d \n", userDetail->data.age);
+    printf(" accountID      : %s \n", userDetail->data.accountID);
+    printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", userDetail->data.balance);
+    printf("\n================= Card Status =======================\n");
+    printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+    printf(" status         : %s \n", userDetail->data.status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
+    printf(" registerDate   : %s \n", userDetail->data.registerTime);
+    printf("=====================================\n");
+
+/*     char(*optionPtr)[50];
+
+    optionPtr = &arr[0]; */
     int optionIndex = 1;
-    optionPtr = &arr[0];
 
     printf("%s :\n", header);
 
-    while (*optionPtr[0] != '\0')
+    int i = 0;
+    while (i < USER_MENU_SIZE)
     {
         if (choice == optionIndex)
-            printf("\033[1;32m> \033[4m");
+            printf("\033[1;32m \033[4m");
 
-        printf("[%d] : %s\n", optionIndex, *optionPtr);
+
+        if(choice == 3 && optionIndex == 3) if(userDetail->data.active == 1)  printf("\033[1;31m");
+        if(choice == 4 && optionIndex == 4) if(userDetail->data.status == 1)  printf("\033[1;31m");
+        ;
+        
+
+        printf("> [%d] : %s\n", optionIndex, arr[i]);
 
         if (choice == optionIndex)
             printf("\033[0m");
-
-        optionPtr++;
+        i++;
         optionIndex++;
     }
 
@@ -266,7 +290,7 @@ void displayUserMenu(int choice, char arr[][50], char header[])
     {
         printf("\033[1;32m> \033[4m");
     }
-    printf("[0] : Quit\n");
+    printf("> [0] : Quit\n");
     if (choice == 0)
     {
         printf("\033[0m");
@@ -276,14 +300,16 @@ void displayUserMenu(int choice, char arr[][50], char header[])
 }
 
 /* [C] */
-int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail)
+int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail)
 {
     char ch;
     int i = 0;
     int num = 1;
-    int max = lenC(arr);
+    int max = USER_MENU_SIZE;
 
-    displayMenuCallback(num, arr, header);
+    displayMenuCallback(num, arr, header , userDetail);
+
+    
 
     while (1)
     {
@@ -296,7 +322,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
             if (ch <= 57 && ch >= 48)
             {
                 num = ch - 48;
-                displayMenuCallback(num, arr, header);
+                displayMenuCallback(num, arr, header , userDetail);
             }
             else
             {
@@ -313,7 +339,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                         num = max;
                     }
 
-                    displayMenuCallback(num, arr, header);
+                    displayMenuCallback(num, arr, header , userDetail);
 
                     break;
                 case DOWN_KEY: // Down arrow key
@@ -327,7 +353,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                         num = min;
                     }
 
-                    displayMenuCallback(num, arr, header);
+                    displayMenuCallback(num, arr, header , userDetail);
                     break;
 
                
@@ -353,23 +379,20 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                             case ENTER_KEY:
 
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
-                                int listSize = getListSize(USER_LIST);
-                                int arrSize;
-
-                                USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
+                              
                                 printf("=====================================\n");
                                 printf("\033[1;32m> Update Data Success \n\033[0m");
                                 printf("=====================================\n");
 
                                 getch();
-                                displayMenuCallback(num, arr, header);
+                                displayMenuCallback(num, arr, header , userDetail);
 
                             break;
 
                             case EXIST_KEY:
 
                                 printf("EXIT \n");
-                                displayMenuCallback(num, arr, header);
+                                displayMenuCallback(num, arr, header , userDetail);
 
                             break;
 
@@ -404,7 +427,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                         case EXIST_KEY:
                         {
                             printf("EXIT \n");
-                            displayMenuCallback(num, arr, header);
+                            displayMenuCallback(num, arr, header , userDetail);
                         }
                         default:
                             break;
@@ -419,7 +442,7 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                        
                         printf(userDetail->data.active == 1 ? "\033[0;31mDo you want to Suspend this card" : "\033[0;32mDo you want to Active this card");
 
-                        printf("?\033[0m \n");
+                        printf(" ?\033[0m \n");
 
                         char chActive;
                         chActive = getch();
@@ -432,20 +455,23 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                                 userDetail->data.active = 0;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;31m> Suspended card [/]\033[0m ");
+                                USER_MENU[2] = "Active Card";
                             }
                             else if(userDetail->data.active == 0){
                                 userDetail->data.active = 1;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;32m> Active card [/]\033[0m ");
-                            }
+                                USER_MENU[2] = "Suspended Card";
 
-                            num = 0;
+                            }
+                            displayMenuCallback(num, arr, header , userDetail);
+
                             break;
                         }
                         case EXIST_KEY:
                         {
                             printf("EXIT \n");
-                            displayMenuCallback(num, arr, header);
+                            displayMenuCallback(num, arr, header , userDetail);
                         }
                         default:
                             break;
@@ -470,23 +496,25 @@ int selectUserMenu(int min, char arr[][50], selectedUserMenu displayMenuCallback
                                 userDetail->data.status = 0;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;31m> Disable card [/]\033[0m ");
+                                USER_MENU[3] = "Enable Card";
 
                             }
                             else if(userDetail->data.status == 0){
                                 userDetail->data.status = 1;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;32m> Enable card [/]\033[0m ");
+                                USER_MENU[3] = "Disable Card";
 
                             }
-                           
 
-                            num = 0;
+                            displayMenuCallback(num, arr, header , userDetail);
+                           
                             break;
                         }
                         case EXIST_KEY:
                         {
                             printf("EXIT \n");
-                            displayMenuCallback(num, arr, header);
+                            displayMenuCallback(num, arr, header , userDetail);
                         }
                         default:
                             break;
@@ -619,14 +647,19 @@ List displayUserArray(User *userArray, int arraySize, int choice, int page)
     {
         printf("\n============== Detail ==============\n");
 
-        printf(" #              : %d \n", detail->_id);
-        printf(" ID             : %s \n", detail->id);
-        printf(" fname          : %s \n", detail->fname);
-        printf(" lname          : %s \n", detail->lname);
-        printf(" age            : %d \n", detail->age);
-        printf(" registerDate   : %s \n", detail->registerTime);
+            printf(" #              : %d \n", detail->_id);
+            printf(" ID             : %s \n", detail->id);
+            printf(" fname          : %s \n", detail->fname);
+            printf(" lname          : %s \n", detail->lname);
+            printf(" age            : %d \n", detail->age);
+            printf(" accountID      : %s \n", detail->accountID);
 
-        printf("==================  =================\n");
+            printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", detail->balance);
+            printf(" active         : %d \n", detail->active);
+            printf(" status         : %d \n", detail->status);
+
+            printf(" registerDate   : %s \n", detail->registerTime);
+            printf("=====================================\n");
 
         /* printf("%d , %d",i,choice);
          */
@@ -1015,12 +1048,19 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                 case ENTER_KEY:
                 {
-                    int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Detail", rowDetail.userData);
 
+                   USER_MENU[2] =  rowDetail.userData->data.active == 0 ?  "Active Card" : "Suspend Card";
+                    USER_MENU[3] = rowDetail.userData->data.status == 0 ?  "Enable Card" : "Disabled Card";
+
+                    checkFileChangeOnce(USERS_DATA);
+                    int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Action", rowDetail.userData);
+
+ 
                     if (exitUserMenu == 0)
                     {
                         rowDetail = tableCallBack(row, page);
                     }
+                    
 
                     break;
                 }
