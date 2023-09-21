@@ -1,3 +1,3 @@
-struct tm *localTime;
+ char s = concatenateWithCommas(FIELD_NAME);
 
-                    localTime = localtime(&lastestTime);
+    printf("%s",  s);
