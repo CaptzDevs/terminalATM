@@ -125,10 +125,6 @@ typedef struct List
 UserNode *USER_LIST = NULL;
 User *USER_ARR = NULL;
 
-char m_id[14] = "1909300007905";
-char m_fname[100] = "SIWAKORN";
-char m_lname[100] = "JANSANGSRI";
-int m_age = 21;
 
 typedef Table (*selectedTable)();
 typedef List (*selectedList)();
