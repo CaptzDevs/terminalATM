@@ -256,7 +256,7 @@ void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetai
     printf(" accountID      : %s \n", userDetail->data.accountID);
     printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", userDetail->data.balance);
     printf("\n================= Card Status =============\n");
-    printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32m[Card is Activated]\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+    printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
     printf(" status         : %s \n", userDetail->data.status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
     printf(" registerDate   : %s \n", userDetail->data.registerTime);
     printf("=====================================\n");
