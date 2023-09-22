@@ -11,7 +11,7 @@
 
 
 #include "config.c"
-#include "array.c"
+#include "module/array.c"
 /* #include "account.c" */
 
 
@@ -501,14 +501,14 @@ int main(){
  /*    system("cls");  */
   printf("\a");
     displayLogo();
-//   /*   createFile();
-//     readFile(); */
+   /*  createFile();
+    readFile();  */
 
        printf("\033[?25l"); // hide cursor
     
-    if(/* insertCard() */ 1){
+    if(insertCard() ){
 
-   /*      printf("\n=======================\n");
+        printf("\n=======================\n");
 
         preLoad2(2);
 
@@ -516,7 +516,7 @@ int main(){
         printf("\033[0m"); // Reset text attributes to default
 
         printf("\n=======================\n");
-        sleep(2); */
+        sleep(2);
         //system("cls");
        //printf("\e[?25h"); // show cursor
 

@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 
 #include "config.c"
-#include "array.c"
+#include "module/array.c"
 
 #define MAX_LINE_SIZE 1024
 #define MAX_FIELDS 10
@@ -29,7 +29,7 @@
 
 #define MAX_LIST_ROW 10
 
-#define MAX_ACCCOUNT_ID_SIZE 10
+#define MAX_ACCCOUNT_ID_SIZE 11
 
 // Money Color \033[38;5;48m
 
@@ -117,8 +117,16 @@ typedef struct List
 
 } List;
 
+typedef struct SearchData
+{
+    int result;
+    User *user;
+} SearchData;
+
 UserNode *USER_LIST = NULL;
 User *USER_ARR = NULL;
+
+int USER_ARR_SIZE = 0;
 
 typedef Table (*selectedTable)();
 typedef List (*selectedList)();
@@ -248,7 +256,7 @@ void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetai
     printf(" accountID      : %s \n", userDetail->data.accountID);
     printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", userDetail->data.balance);
     printf("\n================= Card Status =============\n");
-    printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+    printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32m[Card is Activated]\033[0m" : "\033[0;31mCard is Suspended\033[0m");
     printf(" status         : %s \n", userDetail->data.status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
     printf(" registerDate   : %s \n", userDetail->data.registerTime);
     printf("=====================================\n");
@@ -1513,6 +1521,9 @@ int checkFileChange(const char *filename, float interval)
         else if (result == 1 && i != 0)
         {
             printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
+            printf("Restarting...");
+            /* system("restart.exe"); */
+            exit(1);
             return 1;
         }
         else
@@ -1776,6 +1787,9 @@ Table processCSVToLinkedList(const char *filename, int choice)
     csvDataTable.array = userArray;
     csvDataTable.arraySize = arraySize;
 
+    USER_ARR = userArray;
+    USER_ARR_SIZE = arraySize;
+
     printf("\n Process User Table [/]\n");
     return csvDataTable;
 }
@@ -1815,6 +1829,64 @@ void generateRandomUserData(User *u)
     u->age = 18 + rand() % 43;
 }
 
+SearchData binarySearchAccountID(User arr[], int size, int target) {
+    int left = 0;
+    int right = size - 1;
+    SearchData FoundUser;
+
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        if (atoi(arr[mid].accountID) == target) {
+            FoundUser.result = 1;
+            FoundUser.user = &arr[mid];
+
+            return FoundUser; // Found the target value
+        } else if (atoi(arr[mid].accountID) < target) {
+            left = mid + 1; // Search the right half
+        } else {
+            right = mid - 1; // Search the left half
+        }
+    }
+
+    FoundUser.result = 0;
+    FoundUser.user = NULL;
+
+    return FoundUser;
+}
+
+void searchAccount(char arrcountID[]){
+
+
+    SearchData result = binarySearchAccountID(USER_ARR, USER_ARR_SIZE ,atoi(arrcountID)
+    );
+    
+        if(result.result){
+            printf("\n============== Seearch Result ==============\n");
+
+            printf(" #              : %d \n", result.user->_id);
+            printf(" ID             : %s \n", result.user->id);
+            printf(" fname          : %s \n", result.user->fname);
+            printf(" lname          : %s \n", result.user->lname);
+            printf(" age            : %d \n", result.user->age);
+            printf(" accountID      : %s \n", result.user->accountID);
+            printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", result.user->balance);
+            printf("\n============== Card Status =============\n");
+            printf(" active         : %s \n", result.user->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+            printf(" status         : %s \n", result.user->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
+            printf(" registerDate   : %s \n", result.user->registerTime);
+            printf("==============================================\n");
+
+        }else{
+            printf("\n============== Seearch Result ==============\n");
+            printf("ID  \033[38;5;75m %s  \033[0m Is Not Found\n",arrcountID);
+            printf("==============================================\n");
+
+        }
+}
+
+
 void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result)
 {
     // Initialize the result string
@@ -1832,8 +1904,11 @@ void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result
 
 int main(int argc, char const *argv[])
 {
+    printf("\033[?25l"); // hide cursor
+
     if(_APP_START_CLEAR){
         system("cls");
+
     }
 
     struct tm *localTime;
@@ -1843,12 +1918,10 @@ int main(int argc, char const *argv[])
 
     printf("Program started at: %s", asctime(localTime));
 
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
-
-    printf("\033[?25l");
-
+    /* User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21); */
 
     getch();
+
 
     User *UserArray;
     UserNode *UserList;
@@ -1858,22 +1931,23 @@ int main(int argc, char const *argv[])
     UserList = userData.list;
     UserArray = userData.array;
 
+    printf("Users Numbers : %d \n",userData.arraySize);
+
+    int i = 0;
+    while (i != userData.arraySize )
+    {
+        printf("> %s \n",UserArray[i].accountID);
+        i++;
+    }
+    
+    searchAccount("00000000001");
+
+    getch();
+
     USER_LIST = userData.list;
 
     selectUserList(1, userData.numRows, displayUserList);
 
-    /* selectUserArray(1,userData.arraySize,UserArray,showUserArray); */
-
-    /* checkFileChange(USERS_DATA, 1); */
-
-    /*     User userF;
-        userF = searchUser(UserArray, 1);
-        printf("> %s \n", userF.id);
-        printf("> %s \n", userF.fname); */
     getch();
     return 0;
 }
-
-/*
-Execution Time: 0.028000 seconds ARR
- */
