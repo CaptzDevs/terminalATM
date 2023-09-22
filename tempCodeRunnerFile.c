@@ -1,3 +1,5 @@
- char s = concatenateWithCommas(FIELD_NAME);
 
-    printf("%s",  s);
+    if (intArray == NULL) {
+        printf("Memory allocation failed.\n");
+        return 1;
+    }

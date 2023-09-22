@@ -27,53 +27,47 @@
 #define LEFT_KEY 75
 #define RIGHT_KEY 77
 
-#define MAX_LIST_ROW 5
+#define MAX_LIST_ROW 10
+
+#define MAX_ACCCOUNT_ID_SIZE 10
 
 // Money Color \033[38;5;48m
 
 #define USERS_DATA "./Data/Users.csv"
 #define ACCOUNTS_DATA "./Data/Accounts.csv"
 
-
 char *USER_MENU[] = {
     "EDIT",
     "DELETE",
     "ACTIVE && SUSPEND CARD",
-    "ENABLE && DISABLE CARD"
-};
+    "ENABLE && DISABLE CARD"};
 
 const char *FIELD_NAME[] = {
-        "ID",
-        "AccountID",
-        "First Name",
-        "Last Name",
-        "Age",
-        "Balance",
-        "Active",
-        "Status",
-        "Register Time"
-};
+    "ID",
+    "AccountID",
+    "First Name",
+    "Last Name",
+    "Age",
+    "Balance",
+    "Active",
+    "Status",
+    "Register Time"};
 
 const char *FIELD_TYPE[] = {
-        "%s",
-        "%s",
-        "%s",
-        "%s",
-        "%d",
-        "%.2lf",
-        "%d",
-        "%d",
-        "%s"
-};
+    "%s",
+    "%s",
+    "%s",
+    "%s",
+    "%d",
+    "%.2lf",
+    "%d",
+    "%d",
+    "%s"};
 
 const int FIELD_NAME_SIZE = sizeof(FIELD_NAME) / sizeof(FIELD_NAME[0]);
 const int FIELD_TYPE_SIZE = sizeof(FIELD_TYPE) / sizeof(FIELD_TYPE[0]);
 
 const int USER_MENU_SIZE = sizeof(USER_MENU) / sizeof(USER_MENU[0]);
-
-
-
-
 
 int space[] = {0, 15, 15, 15, 15, 15};
 
@@ -123,10 +117,8 @@ typedef struct List
 
 } List;
 
-
 UserNode *USER_LIST = NULL;
 User *USER_ARR = NULL;
-
 
 typedef Table (*selectedTable)();
 typedef List (*selectedList)();
@@ -134,20 +126,22 @@ typedef List (*selectedArray)();
 typedef void (*selectedUserMenu)();
 
 /* ============================ */
-void concatenateWithCommas(const char *fieldNames[],int fieldSize, char *result);
+void saveUser(const char *filename, const User *userData);
+void appendToCSV(const char *filename, const User *userData);
+
+void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result);
 void saveLinkedListToCSV(const char *filename, UserNode *head);
 int getListSize(UserNode *list);
 int checkFileChange(const char *filename, float interval);
 int checkFileChangeOnce(const char *filename);
 
+int isfileExists(const char *filename);
 int getStringInput(char *input, int maxSize);
 int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
 UserNode *deleteUser(int id);
 Table processCSVToLinkedList(const char *filename, int choice);
-
-
 
 time_t lastestTime;
 
@@ -158,7 +152,7 @@ time_t lastestTime;
     2. Display Function         [D]
 */
 
-UserNode* editUserData(UserNode *userDetail)
+UserNode *editUserData(UserNode *userDetail)
 {
 
     printf("ID           %-5s %s \n", ":", userDetail->data.id);
@@ -238,7 +232,7 @@ int getStringInput(char *input, int maxSize)
 }
 
 /* [D] */
-void displayUserMenu(int choice, char *arr[], char header[] ,UserNode* userDetail)
+void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetail)
 {
 
     if (_RFMENU)
@@ -253,15 +247,15 @@ void displayUserMenu(int choice, char *arr[], char header[] ,UserNode* userDetai
     printf(" age            : %d \n", userDetail->data.age);
     printf(" accountID      : %s \n", userDetail->data.accountID);
     printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", userDetail->data.balance);
-    printf("\n================= Card Status =======================\n");
+    printf("\n================= Card Status =============\n");
     printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
     printf(" status         : %s \n", userDetail->data.status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
     printf(" registerDate   : %s \n", userDetail->data.registerTime);
     printf("=====================================\n");
 
-/*     char(*optionPtr)[50];
+    /*     char(*optionPtr)[50];
 
-    optionPtr = &arr[0]; */
+        optionPtr = &arr[0]; */
     int optionIndex = 1;
 
     printf("%s :\n", header);
@@ -272,11 +266,13 @@ void displayUserMenu(int choice, char *arr[], char header[] ,UserNode* userDetai
         if (choice == optionIndex)
             printf("\033[1;32m \033[4m");
 
-
-        if(choice == 3 && optionIndex == 3) if(userDetail->data.active == 1)  printf("\033[1;31m");
-        if(choice == 4 && optionIndex == 4) if(userDetail->data.status == 1)  printf("\033[1;31m");
+        if (choice == 3 && optionIndex == 3)
+            if (userDetail->data.active == 1)
+                printf("\033[1;31m");
+        if (choice == 4 && optionIndex == 4)
+            if (userDetail->data.status == 1)
+                printf("\033[1;31m");
         ;
-        
 
         printf("> [%d] : %s\n", optionIndex, arr[i]);
 
@@ -300,16 +296,14 @@ void displayUserMenu(int choice, char *arr[], char header[] ,UserNode* userDetai
 }
 
 /* [C] */
-int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail)
+int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail)
 {
     char ch;
     int i = 0;
     int num = 1;
     int max = USER_MENU_SIZE;
 
-    displayMenuCallback(num, arr, header , userDetail);
-
-    
+    displayMenuCallback(num, arr, header, userDetail);
 
     while (1)
     {
@@ -322,7 +316,7 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
             if (ch <= 57 && ch >= 48)
             {
                 num = ch - 48;
-                displayMenuCallback(num, arr, header , userDetail);
+                displayMenuCallback(num, arr, header, userDetail);
             }
             else
             {
@@ -339,7 +333,7 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
                         num = max;
                     }
 
-                    displayMenuCallback(num, arr, header , userDetail);
+                    displayMenuCallback(num, arr, header, userDetail);
 
                     break;
                 case DOWN_KEY: // Down arrow key
@@ -353,10 +347,9 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
                         num = min;
                     }
 
-                    displayMenuCallback(num, arr, header , userDetail);
+                    displayMenuCallback(num, arr, header, userDetail);
                     break;
 
-               
                 case ENTER_KEY: // Down arrow key
                     if (_ADMIN_DEBUG)
                         printf("SELECT IN USER MENU\n");
@@ -376,27 +369,27 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
 
                         switch (ch2)
                         {
-                            case ENTER_KEY:
+                        case ENTER_KEY:
 
-                                saveLinkedListToCSV(USERS_DATA, USER_LIST);
-                              
-                                printf("=====================================\n");
-                                printf("\033[1;32m> Update Data Success \n\033[0m");
-                                printf("=====================================\n");
+                            saveLinkedListToCSV(USERS_DATA, USER_LIST);
 
-                                getch();
-                                displayMenuCallback(num, arr, header , userDetail);
+                            printf("=====================================\n");
+                            printf("\033[1;32m> Update Data Success \n\033[0m");
+                            printf("=====================================\n");
 
-                            break;
-
-                            case EXIST_KEY:
-
-                                printf("EXIT \n");
-                                displayMenuCallback(num, arr, header , userDetail);
+                            getch();
+                            displayMenuCallback(num, arr, header, userDetail);
 
                             break;
 
-                            default:
+                        case EXIST_KEY:
+
+                            printf("EXIT \n");
+                            displayMenuCallback(num, arr, header, userDetail);
+
+                            break;
+
+                        default:
                             break;
                         }
 
@@ -427,7 +420,7 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
                         case EXIST_KEY:
                         {
                             printf("EXIT \n");
-                            displayMenuCallback(num, arr, header , userDetail);
+                            displayMenuCallback(num, arr, header, userDetail);
                         }
                         default:
                             break;
@@ -435,11 +428,11 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
 
                         break;
 
-                       case 3: // Suspend card
+                    case 3: // Suspend card
                         printf("=====================\n");
                         printf("%s\n", userDetail->data.active == 1 ? "SUSPEND CARD" : "ACTIVE CARD");
                         printf("=====================\n");
-                       
+
                         printf(userDetail->data.active == 1 ? "\033[0;31mDo you want to Suspend this card" : "\033[0;32mDo you want to Active this card");
 
                         printf(" ?\033[0m \n");
@@ -451,27 +444,28 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
                         {
                         case ENTER_KEY:
                         {
-                            if(userDetail->data.active == 1){
+                            if (userDetail->data.active == 1)
+                            {
                                 userDetail->data.active = 0;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;31m> Suspended card [/]\033[0m ");
                                 USER_MENU[2] = "Active Card";
                             }
-                            else if(userDetail->data.active == 0){
+                            else if (userDetail->data.active == 0)
+                            {
                                 userDetail->data.active = 1;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;32m> Active card [/]\033[0m ");
                                 USER_MENU[2] = "Suspended Card";
-
                             }
-                            displayMenuCallback(num, arr, header , userDetail);
+                            displayMenuCallback(num, arr, header, userDetail);
 
                             break;
                         }
                         case EXIST_KEY:
                         {
                             printf("EXIT \n");
-                            displayMenuCallback(num, arr, header , userDetail);
+                            displayMenuCallback(num, arr, header, userDetail);
                         }
                         default:
                             break;
@@ -492,29 +486,29 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
                         {
                         case ENTER_KEY:
                         {
-                            if(userDetail->data.status == 1){
+                            if (userDetail->data.status == 1)
+                            {
                                 userDetail->data.status = 0;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;31m> Disable card [/]\033[0m ");
                                 USER_MENU[3] = "Enable Card";
-
                             }
-                            else if(userDetail->data.status == 0){
+                            else if (userDetail->data.status == 0)
+                            {
                                 userDetail->data.status = 1;
                                 saveLinkedListToCSV(USERS_DATA, USER_LIST);
                                 printf("\033[0;32m> Enable card [/]\033[0m ");
                                 USER_MENU[3] = "Disable Card";
-
                             }
 
-                            displayMenuCallback(num, arr, header , userDetail);
-                           
+                            displayMenuCallback(num, arr, header, userDetail);
+
                             break;
                         }
                         case EXIST_KEY:
                         {
                             printf("EXIT \n");
-                            displayMenuCallback(num, arr, header , userDetail);
+                            displayMenuCallback(num, arr, header, userDetail);
                         }
                         default:
                             break;
@@ -527,17 +521,16 @@ int selectUserMenu(int min, char* arr[], selectedUserMenu displayMenuCallback, c
                         break;
                     }
 
-                break;
-                case EXIST_KEY : // exit User detail menu
+                    break;
+                case EXIST_KEY: // exit User detail menu
                     return 0;
-                break;
+                    break;
                 default:
                     printf("\n");
-                break;
+                    break;
                 }
             }
             // Enter Key
-           
         }
 
         /* printf("Select : %d \n",num); */
@@ -645,21 +638,20 @@ List displayUserArray(User *userArray, int arraySize, int choice, int page)
 
     if (detail)
     {
-        printf("\n============== Detail ==============\n");
+        printf("\n============== User Detail ==============\n");
 
-            printf(" #              : %d \n", detail->_id);
-            printf(" ID             : %s \n", detail->id);
-            printf(" fname          : %s \n", detail->fname);
-            printf(" lname          : %s \n", detail->lname);
-            printf(" age            : %d \n", detail->age);
-            printf(" accountID      : %s \n", detail->accountID);
-
-            printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", detail->balance);
-            printf(" active         : %d \n", detail->active);
-            printf(" status         : %d \n", detail->status);
-
-            printf(" registerDate   : %s \n", detail->registerTime);
-            printf("=====================================\n");
+        printf(" #              : %d \n", detail->_id);
+        printf(" ID             : %s \n", detail->id);
+        printf(" fname          : %s \n", detail->fname);
+        printf(" lname          : %s \n", detail->lname);
+        printf(" age            : %d \n", detail->age);
+        printf(" accountID      : %s \n", detail->accountID);
+        printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", detail->balance);
+        printf("\n================= Card Status =============\n");
+        printf(" active         : %s \n", detail->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+        printf(" status         : %s \n", detail->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
+        printf(" registerDate   : %s \n", detail->registerTime);
+        printf("=====================================\n");
 
         /* printf("%d , %d",i,choice);
          */
@@ -814,13 +806,13 @@ List displayUserList(int choice, int page)
     {
         current = USER_LIST;
         if (_SHOW_LIST_LINE)
-            printf("|%-5s", "Line");
-            printf("|%-5s", "_ID");
-            printf("|%-15s", "ID");
-            printf("|%-15s", "AccountID");
-            printf("|%-20s", "Fname");
-            printf("|%-20s", "Lname\n");
-            printf("\n");
+        printf("|%-5s", "Line");
+        printf("|%-5s", "_ID");
+        printf("|%-15s", "ID");
+        printf("|%-13s", "AccountID");
+        printf("|%-15s", "Fname");
+        printf("|%-15s", "Lname\n");
+        printf("\n");
 
         while (current != NULL && i <= stop)
         {
@@ -841,9 +833,9 @@ List displayUserList(int choice, int page)
                     printf("|%-5d", i);
                 printf("|%-5d", current->data._id);
                 printf("|%-15s", current->data.id);
-                printf("|%-15s", current->data.accountID);
-                printf("|%-20s", current->data.fname);
-                printf("|%-20s\n", current->data.lname);
+                printf("|%-13s", current->data.accountID);
+                printf("|%-15s", current->data.fname);
+                printf("|%-15s\n", current->data.lname);
                 /* printf(" %-2d |\n", current->data.age); */
                 countRows++;
             }
@@ -899,7 +891,7 @@ List displayUserList(int choice, int page)
 
         if (detail)
         {
-            printf("\n============== Detail ==============\n");
+            printf("\n============== User Detail ==============\n");
 
             printf(" #              : %d \n", detail->data._id);
             printf(" ID             : %s \n", detail->data.id);
@@ -907,11 +899,10 @@ List displayUserList(int choice, int page)
             printf(" lname          : %s \n", detail->data.lname);
             printf(" age            : %d \n", detail->data.age);
             printf(" accountID      : %s \n", detail->data.accountID);
-
             printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", detail->data.balance);
-            printf(" active         : %d \n", detail->data.active);
-            printf(" status         : %d \n", detail->data.status);
-
+            printf("\n================= Card Status =============\n");
+            printf(" active         : %s \n", detail->data.active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+            printf(" status         : %s \n", detail->data.status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
             printf(" registerDate   : %s \n", detail->data.registerTime);
             printf("=====================================\n");
         }
@@ -1002,10 +993,8 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
 
-                    
                     rowDetail = tableCallBack(row, page);
                     numRows = rowDetail.numRows;
-                    
                 }
                 break;
                 case RIGHT_KEY: // Up right key
@@ -1018,7 +1007,6 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                         flag = MAX_LIST_ROW;
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
-
 
                     rowDetail = tableCallBack(row, page);
                     numRows = rowDetail.numRows;
@@ -1035,32 +1023,27 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                         row = MAX_LIST_ROW * (page - 1) + 1;
                     }
 
-
                     checkFileChangeOnce(USERS_DATA);
 
                     rowDetail = tableCallBack(row, page);
                     currnentID = rowDetail.currentID;
                     row = rowDetail.currentRow;
-                   
-
 
                     break;
 
                 case ENTER_KEY:
                 {
 
-                   USER_MENU[2] =  rowDetail.userData->data.active == 0 ?  "Active Card" : "Suspend Card";
-                    USER_MENU[3] = rowDetail.userData->data.status == 0 ?  "Enable Card" : "Disabled Card";
+                    USER_MENU[2] = rowDetail.userData->data.active == 0 ? "Active Card" : "Suspend Card";
+                    USER_MENU[3] = rowDetail.userData->data.status == 0 ? "Enable Card" : "Disabled Card";
 
                     checkFileChangeOnce(USERS_DATA);
                     int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Action", rowDetail.userData);
 
- 
                     if (exitUserMenu == 0)
                     {
                         rowDetail = tableCallBack(row, page);
                     }
-                    
 
                     break;
                 }
@@ -1164,28 +1147,27 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
     char headerFile[100];
     char dataType[100];
 
-    concatenateWithCommas(FIELD_NAME,FIELD_NAME_SIZE,headerFile);
-    concatenateWithCommas(FIELD_TYPE,FIELD_TYPE_SIZE,dataType);
+    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
+    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
 
     // Write the header line
-    fprintf(file, strcat(headerFile,"\n"));
+    fprintf(file, strcat(headerFile, "\n"));
 
     UserNode *current = head;
     while (current != NULL)
     {
         User user = current->data;
-        
-        fprintf(file, dataType, 
-            user.id,
-            user.accountID, 
-            user.fname, 
-            user.lname, 
-            user.age,
-            user.balance,
-            user.active,
-            user.status, 
-            user.registerTime
-        );
+
+        fprintf(file, dataType,
+                user.id,
+                user.accountID,
+                user.fname,
+                user.lname,
+                user.age,
+                user.balance,
+                user.active,
+                user.status,
+                user.registerTime);
 
         current = current->next;
     }
@@ -1208,7 +1190,6 @@ int getListSize(UserNode *list)
             count++;
             current = current->next;
         }
-
         return count;
     }
 }
@@ -1339,7 +1320,6 @@ char *getCurrentTime()
         exit(1);
         // Exit the program if memory allocation fails
     }
-
     // Get the current time
     time(&current_time);
 
@@ -1349,6 +1329,103 @@ char *getCurrentTime()
     // Format the time as a string
     strftime(time_string, 50, "%Y-%m-%d %H:%M:%S", time_info);
     return time_string; // Return the dynamically allocated string
+}
+
+int getRowsByColumn(int index){
+    // Generate an account ID based on max+1 of number of Users.csv Data
+    FILE *file = fopen(USERS_DATA, "r"); // Replace "data.csv" with your CSV file name
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    int columnToRead = index; // Specify the column index you want to read (0-based index)
+    char line[MAX_LINE_SIZE];
+    int skip =0;
+    int length = 0;
+    while (fgets(line, sizeof(line), file)) {
+        char *token = strtok(line, ",");
+        int columnIndex = 0;
+
+        while (token != NULL && skip > 0) {
+            
+            if (columnIndex == columnToRead) {
+                printf("# %d: %s\n", columnIndex, token);
+                break;
+            }
+
+            token = strtok(NULL, ",");
+            columnIndex++;
+            length++;
+        }
+        skip++;
+    }
+
+    fclose(file);
+    return length;
+
+}
+
+int getMaxAccountID(){
+    // Generate an account ID based on max+1 of number of Users.csv Data
+    FILE *file = fopen(USERS_DATA, "r"); // Replace "data.csv" with your CSV file name
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    int columnToRead = 1; // Specify the column index you want to read (0-based index)
+    char line[MAX_LINE_SIZE];
+    int skip =0;
+    int length = 0;
+    int max = 0;
+    while (fgets(line, sizeof(line), file)) {
+        char *token = strtok(line, ",");
+        int columnIndex = 0;
+
+        while (token != NULL && skip > 0) {
+            
+            if (columnIndex == columnToRead) {
+                if(atoi(token) > max){
+                    max = atoi(token);
+                }
+                break;
+            }
+
+            token = strtok(NULL, ",");
+            columnIndex++;
+            length++;
+        }
+        skip++;
+    }
+
+    fclose(file);
+    return max;
+
+}
+
+void getNewAccountID(User *user){
+    char maxStrLen[MAX_ACCCOUNT_ID_SIZE];
+    int maxID = getMaxAccountID(1)+1;
+
+    itoa(maxID,maxStrLen ,10);
+    printf("Max AccountID : %s \n",maxStrLen);
+
+    int maxIdLength = strlen(maxStrLen);
+
+    char result[MAX_ACCCOUNT_ID_SIZE] = "";
+    int l  = 0;
+
+    while (l < MAX_ACCCOUNT_ID_SIZE-maxIdLength)
+    {
+        strcat(result,"0");
+        l++;
+    }
+
+    strcat(result,maxStrLen);
+
+
+    strcpy(user->accountID , result);
 }
 
 User Register(const char id[], const char fname[], const char lname[], int age)
@@ -1368,6 +1445,33 @@ User Register(const char id[], const char fname[], const char lname[], int age)
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
     newUser.registerTime[sizeof(newUser.registerTime) - 1] = '\0';
+
+    getNewAccountID(&newUser);
+    newUser.active = 1;
+    newUser.status = 1;
+    newUser.balance =  0.00;
+
+    
+    printf("================ New User ============\n");
+    printf("ID                  : %s \n", newUser.id);
+    printf("Full Name           : %s %s\n", newUser.fname, newUser.lname);
+    printf("Age                 : %d \n", newUser.age);
+    printf("-------------------------------------\n");
+    printf("AccountID           : %s \n", newUser.accountID);
+    printf("Balance             :\033[38;5;48m %.2lf \033[0m \n", newUser.balance);
+    printf("Register Time       : %s \n", newUser.registerTime);
+    printf("======================================\n");
+
+    if (isfileExists(USERS_DATA))
+    {
+        printf(_ADMIN_DEBUG ? "file is exist : Appended\n" : "");
+        appendToCSV(USERS_DATA, &newUser);
+    }
+    else
+    {
+        printf(_ADMIN_DEBUG ? "file is not exist : Create\n" : "");
+        saveUser(USERS_DATA, &newUser);
+    }
 
     return newUser;
 }
@@ -1424,30 +1528,30 @@ int checkFileChange(const char *filename, float interval)
 
 int checkFileChangeOnce(const char *filename)
 {
- 
-        time_t lastModifiedTime = 0;
-        int result = isFileChanged(filename, &lastModifiedTime);
 
-          
-            // Print the current time in a human-readable format
-            printf("Program started at: %s", ctime(&lastestTime));
-            printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
-            if(lastModifiedTime >= lastestTime){
-                printf("Loading New Data");
-                     struct tm *localTime;
-                    time(&lastestTime);
-                    localTime = localtime(&lastestTime);
+    time_t lastModifiedTime = 0;
+    int result = isFileChanged(filename, &lastModifiedTime);
 
-                    USER_LIST = NULL;
-                    Table userData = processCSVToLinkedList(USERS_DATA, 1);
-                    USER_LIST = userData.list;
+    // Print the current time in a human-readable format
+    printf("Program started at: %s", ctime(&lastestTime));
+    printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
+    if (lastModifiedTime >= lastestTime)
+    {
+        printf("Loading New Data");
+        struct tm *localTime;
+        time(&lastestTime);
+        localTime = localtime(&lastestTime);
 
-            }else{
-                printf("Not Change");
-            }
-            return 1;
+        USER_LIST = NULL;
+        Table userData = processCSVToLinkedList(USERS_DATA, 1);
+        USER_LIST = userData.list;
+    }
+    else
+    {
+        printf("Not Change");
+    }
+    return 1;
 }
-
 
 int isfileExists(const char *filename)
 {
@@ -1466,24 +1570,23 @@ void saveUser(const char *filename, const User *userData)
     char headerFile[100];
     char dataType[100];
 
-    concatenateWithCommas(FIELD_NAME,FIELD_NAME_SIZE,headerFile);
-    concatenateWithCommas(FIELD_TYPE,FIELD_TYPE_SIZE,dataType);
+    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
+    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
 
     // Write the header row
     fprintf(file, strcat(headerFile, "\n"));
 
     // Write User data
-      fprintf(file, dataType, 
+    fprintf(file, dataType,
             userData->id,
-            userData->accountID, 
-            userData->fname, 
-            userData->lname, 
+            userData->accountID,
+            userData->fname,
+            userData->lname,
             userData->age,
             userData->balance,
             userData->active,
-            userData->status, 
-            userData->registerTime
-        );
+            userData->status,
+            userData->registerTime);
 
     // Close the file
     fclose(file);
@@ -1497,28 +1600,28 @@ void appendToCSV(const char *filename, const User *userData)
         perror("Unable to open file");
         exit(1);
     }
-    
-   char headerFile[100];
+
+    char headerFile[100];
     char dataType[100];
 
-    concatenateWithCommas(FIELD_NAME,FIELD_NAME_SIZE,headerFile);
-    concatenateWithCommas(FIELD_TYPE,FIELD_TYPE_SIZE,dataType);
+    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
+    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
 
     // Write the header row
-    fprintf(file, strcat(headerFile, "\n"));
+/*     fprintf(file, strcat(headerFile, "\n")); */
 
+    fprintf(file,"\n");
     // Write User data
-      fprintf(file, dataType, 
+    fprintf(file, dataType,
             userData->id,
-            userData->accountID, 
-            userData->fname, 
-            userData->lname, 
+            userData->accountID,
+            userData->fname,
+            userData->lname,
             userData->age,
             userData->balance,
             userData->active,
-            userData->status, 
-            userData->registerTime
-        );
+            userData->status,
+            userData->registerTime);
 
     // Close the file
     fclose(file);
@@ -1530,179 +1633,6 @@ void copyTo(char *dest, const char *src, size_t destSize)
     dest[destSize - 1] = '\0';
 }
 
-Table processTableCSV(const char *filename, int choice)
-{
-    FILE *file = fopen(filename, "r");
-    Table csvDataTable;
-    User userData;
-    UserNode *userHead = NULL;
-    UserNode *current = NULL;
-
-
-    printf("\n=================== User Table ===================\n");
-
-    if (!file)
-    {
-        perror("Error opening file");
-        return csvDataTable;
-    }
-
-    char line[MAX_LINE_SIZE];
-    char *fieldNames[MAX_FIELDS]; // Array to store field names
-    int fieldCount = 1;
-    int currentRow = 1; // Initialize the row number
-
-    // Read the first line to get field names
-    if (fgets(line, sizeof(line), file))
-    {
-        char *token = strtok(line, ",");
-        fieldNames[0] = strdup("#");
-        while (token && fieldCount < MAX_FIELDS)
-        {
-            // Store the field name in the array
-            fieldNames[fieldCount] = strdup(token);
-
-            // Remove trailing newline character, if present
-            size_t len = strlen(fieldNames[fieldCount]);
-            if (fieldNames[fieldCount][len - 1] == '\n')
-            {
-                fieldNames[fieldCount][len - 1] = '\0';
-            }
-
-            // Get the next token
-            token = strtok(NULL, ",");
-            fieldCount++;
-        }
-    }
-
-    // Print field names as the first row of the table
-    for (int i = 0; i < fieldCount; i++)
-    {
-        printf("%-*s\t", space[i], fieldNames[i]);
-    }
-
-    printf("\n");
-
-    // Process the data lines
-    while (fgets(line, sizeof(line), file) && currentRow <= MAX_ROW)
-    {
-        char *token = strtok(line, ",");
-        int currentField = 0;
-
-        if (choice == currentRow)
-            printf("\033[1;32m\033[4m");
-
-        printf("%d\t", currentRow); // Print the row number
-
-        if (choice == currentRow)
-            printf("\033[0m");
-
-        while (token && currentField < fieldCount)
-        {
-
-            if (strcmp(fieldNames[0], "#") == 0)
-                userData._id = currentRow;
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[0]) == 0)
-                copyTo(userData.id, token, sizeof(userData.id));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[1]) == 0)
-                copyTo(userData.fname, token, sizeof(userData.fname));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[2]) == 0)
-                copyTo(userData.lname, token, sizeof(userData.lname));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[3]) == 0)
-                userData.age = atoi(token);
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[4]) == 0)
-                copyTo(userData.registerTime, token, sizeof(userData.registerTime));
-
-            // Remove trailing newline character from the token, if present
-            size_t len = strlen(token);
-
-            if (token[len - 1] == '\n')
-            {
-                token[len - 1] = '\0';
-            }
-
-            // Print data value with tab separator
-            if (choice == currentRow)
-                printf("\033[1;32m");
-
-            printf("%-*s\t", space[currentField], token);
-
-            if (choice == currentRow)
-                printf("\033[0m");
-
-            // Get the next token
-            token = strtok(NULL, ",");
-            currentField++;
-        }
-
-        printf("\n");
-
-        UserNode *newUserNode = NULL;
-        newUserNode = malloc(sizeof(struct UserNode));
-        newUserNode->data = userData;
-        newUserNode->next = NULL;
-
-        current = userHead;
-
-        if (userHead == NULL)
-        {
-            userHead = newUserNode;
-        }
-        else
-        {
-            while (current)
-            {
-                if (!current->next)
-                {
-                    current->next = newUserNode;
-
-                    break;
-                }
-                current = current->next;
-            }
-        }
-
-        /* printf("%s\n", newUserNode->data.id); */
-
-        currentRow++; // Increment the row number
-    }
-
-    // Free memory for field names
-    for (int i = 0; i < fieldCount; i++)
-    {
-        free(fieldNames[i]);
-    }
-
-    fclose(file);
-
-    printf("\n============== Table Detail ==============\n");
-
-    csvDataTable.numRows = currentRow - 1;
-    csvDataTable.numCols = fieldCount;
-    csvDataTable.list = userHead;
-
-    printf("Cols            : %d \n", fieldCount);
-    printf("Rows            : %d \n", currentRow - 1);
-    printf("Selected At Row : %d \n", choice);
-
-    printf("\n");
-
-    printf("\n============== Last insert row ==============\n");
-
-    printf(" #              : %d \n", currentRow - 1);
-    printf(" ID             : %s \n", userData.id);
-    printf(" fname          : %s \n", userData.fname);
-    printf(" lname          : %s \n", userData.lname);
-    printf(" age            : %d \n", userData.age);
-    printf(" registerDate   : %s \n", userData.registerTime);
-
-    return csvDataTable;
-}
 
 Table processCSVToLinkedList(const char *filename, int choice)
 {
@@ -1746,14 +1676,6 @@ Table processCSVToLinkedList(const char *filename, int choice)
         }
     }
 
-    // Print field names as the first row of the table
-    /*  for (int i = 0; i < fieldCount; i++)
-     {
-         printf("%-*s\t", space[i], fieldNames[i]);
-     } */
-
-    /*   printf("\n"); */
-
     // Process the data lines
     while (fgets(line, sizeof(line), file) && currentRow <= MAX_ROW)
     {
@@ -1770,7 +1692,7 @@ Table processCSVToLinkedList(const char *filename, int choice)
                 copyTo(userData.id, token, sizeof(userData.id));
 
             if (strcmp(fieldNames[currentField + 1], FIELD_NAME[1]) == 0)
-            copyTo(userData.accountID, token, sizeof(userData.accountID));
+                copyTo(userData.accountID, token, sizeof(userData.accountID));
 
             if (strcmp(fieldNames[currentField + 1], FIELD_NAME[2]) == 0)
                 copyTo(userData.fname, token, sizeof(userData.fname));
@@ -1782,7 +1704,7 @@ Table processCSVToLinkedList(const char *filename, int choice)
                 userData.age = atoi(token);
 
             if (strcmp(fieldNames[currentField + 1], FIELD_NAME[5]) == 0)
-                userData.balance = strtod(token,NULL);
+                userData.balance = strtod(token, NULL);
 
             if (strcmp(fieldNames[currentField + 1], FIELD_NAME[6]) == 0)
                 userData.active = atoi(token);
@@ -1893,13 +1815,16 @@ void generateRandomUserData(User *u)
     u->age = 18 + rand() % 43;
 }
 
-void concatenateWithCommas(const char *fieldNames[],int fieldSize, char *result) {
+void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result)
+{
     // Initialize the result string
     strcpy(result, "");
 
-    for (int i = 0; i < fieldSize; i++) {
+    for (int i = 0; i < fieldSize; i++)
+    {
         strcat(result, fieldNames[i]);
-        if (i < fieldSize - 1) {
+        if (i < fieldSize - 1)
+        {
             strcat(result, ",");
         }
     }
@@ -1907,72 +1832,26 @@ void concatenateWithCommas(const char *fieldNames[],int fieldSize, char *result)
 
 int main(int argc, char const *argv[])
 {
+    if(_APP_START_CLEAR){
+        system("cls");
+    }
 
-    /*  User registeredUser = Register(m_id, m_fname, m_lname, m_age); */
     struct tm *localTime;
     // Get the current time
     time(&lastestTime);
     localTime = localtime(&lastestTime);
 
-    // Print the current time in a human-readable format
     printf("Program started at: %s", asctime(localTime));
-    printf("%d",isfileExists(USERS_DATA));
-/* 
- char headerFile[100];
-    char dataType[100];
 
-    concatenateWithCommas(FIELD_NAME,FIELD_NAME_SIZE,headerFile);
-    concatenateWithCommas(FIELD_TYPE,FIELD_TYPE_SIZE,dataType);
-
-    printf("%s",dataType); */
-    getch();
+    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
 
     printf("\033[?25l");
-    int i = 0;
-    int numUsers = 500;
-
-    User registeredUser[numUsers];
-    UserNode *UserList;
-
-    /*    while (i < numUsers)
-       {
-            generateRandomUserData(&registeredUser[i]);
-            appendToCSV(USERS_DATA, &registeredUser[i]);
 
 
-            i++;
-       } */
-
-    /*     printf("================ New User ============\n");
-        printf("ID                  : %s \n", registeredUser.id);
-        printf("User                : %s %s\n", registeredUser.fname, registeredUser.lname);
-        printf("Age                 : %d \n", registeredUser.age);
-        printf("Register Time       : %s \n", registeredUser.registerTime); */
-
-    /*     printf("======================================\n");
-
-           if (isfileExists(USERS_DATA))
-        {
-            printf(_ADMIN_DEBUG ? "file is exist : APPENDED\n" : "");
-            appendToCSV(USERS_DATA, &registeredUser);
-        }
-        else
-        {
-            printf(_ADMIN_DEBUG ? "file is not exist : CREATED\n" : "");
-            saveUser(USERS_DATA, &registeredUser);
-        } */
-
-    printf("========================\n");
-    printf("Table USERS \n");
-    printf("========================\n");
-
-    /*  Table userData = processTableCSV("Users", 1);
-     UserList = userData.list; */
-
-    /* showLinkedList(UserList);
-    selectRow(1, userData.numRows, "Users", processTableCSV); */
+    getch();
 
     User *UserArray;
+    UserNode *UserList;
 
     // Init User List
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
