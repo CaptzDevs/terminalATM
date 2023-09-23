@@ -66,7 +66,6 @@ const char *FIELD_TYPE[] = {
 
 const int FIELD_NAME_SIZE = sizeof(FIELD_NAME) / sizeof(FIELD_NAME[0]);
 const int FIELD_TYPE_SIZE = sizeof(FIELD_TYPE) / sizeof(FIELD_TYPE[0]);
-
 const int USER_MENU_SIZE = sizeof(USER_MENU) / sizeof(USER_MENU[0]);
 
 int space[] = {0, 15, 15, 15, 15, 15};
@@ -163,6 +162,7 @@ time_t lastestTime;
 UserNode *editUserData(UserNode *userDetail)
 {
 
+    
     printf("ID           %-5s %s \n", ":", userDetail->data.id);
     printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
     printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
@@ -370,11 +370,18 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         printf("\t   %s\n", USER_MENU[num - 1]);
                         printf("===============================\n");
 
-                        editUserData(userDetail);
+                        UserNode temp;
+                        strcpy(temp.data.fname, userDetail->data.fname);
+                        strcpy(temp.data.lname, userDetail->data.lname);
+                        temp.data.age = userDetail->data.age;
 
+
+                        editUserData(userDetail);
+                        
                         char ch2;
                         ch2 = getch();
-
+                        printf("> %d",ch2);
+                        getch();
                         switch (ch2)
                         {
                         case ENTER_KEY:
@@ -391,6 +398,10 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                             break;
 
                         case EXIST_KEY:
+
+                                strcpy(userDetail->data.fname, temp.data.fname);
+                                strcpy(userDetail->data.lname, temp.data.lname);
+                                userDetail->data.age = temp.data.age;
 
                             printf("EXIT \n");
                             displayMenuCallback(num, arr, header, userDetail);
@@ -420,7 +431,6 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                             int listSize = getListSize(USER_LIST);
                             int arrSize;
                             USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
-
                             free(userDetail);
                             num = 0;
                             break;
@@ -1130,7 +1140,7 @@ User *linkedListToArray(UserNode *head, int linkSize, int *arraySize)
         perror("Memory allocation failed");
         exit(EXIT_FAILURE);
     }
-
+    printf("D");
     // Copy the data from nodes into the array
     current = head;
     for (int i = 0; i < count; i++)
