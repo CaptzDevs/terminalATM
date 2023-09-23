@@ -13,13 +13,16 @@
 #include "module/array.c"
 
 #define MAX_LINE_SIZE 1024
-#define MAX_FIELDS 10
+#define MAX_FIELDS 15
 #define MAX_ROW 30000
 
 // Key
 #define EXIST_KEY 27
 #define ENTER_KEY 13
 #define DELETE_KEY 83
+#define BACKSPACE 8
+
+
 
 // Arrow Key Code
 #define UP_KEY 72
@@ -51,7 +54,9 @@ const char *FIELD_NAME[] = {
     "Balance",
     "Active",
     "Status",
-    "Register Time"};
+    "Register Time",
+    "Password"
+    };
 
 const char *FIELD_TYPE[] = {
     "%s",
@@ -62,7 +67,9 @@ const char *FIELD_TYPE[] = {
     "%.2lf",
     "%d",
     "%d",
-    "%s"};
+    "%s",
+    "%s"
+    };
 
 const int FIELD_NAME_SIZE = sizeof(FIELD_NAME) / sizeof(FIELD_NAME[0]);
 const int FIELD_TYPE_SIZE = sizeof(FIELD_TYPE) / sizeof(FIELD_TYPE[0]);
@@ -82,6 +89,7 @@ typedef struct User
     int active;
     int status;
     char registerTime[50];
+    char password[6];
 
 } User;
 
@@ -135,6 +143,7 @@ typedef void (*selectedUserMenu)();
 /* ============================ */
 void saveUser(const char *filename, const User *userData);
 void appendToCSV(const char *filename, const User *userData);
+char* createPassword();
 
 void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result);
 void saveLinkedListToCSV(const char *filename, UserNode *head);
@@ -158,6 +167,7 @@ time_t lastestTime;
     1. Controller Function      [C]
     2. Display Function         [D]
 */
+
 
 UserNode *editUserData(UserNode *userDetail)
 {
@@ -1127,6 +1137,36 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
 /* Utilities Function */
 
+char* getPassword(int pass_len) {
+    const int PASS_LEN = pass_len;
+    char* password = (char*)malloc((PASS_LEN + 1) * sizeof(char)); // +1 for null terminator
+    char ch;
+    int i = 0;
+
+    printf("> ");
+
+    while (i < PASS_LEN) {
+        ch = getch();
+        if (ch == BACKSPACE) {
+            if (i > 0) {
+                i--;
+                printf("\b \b");
+            }
+        } else if (ch >= '0' && ch <= '9' && i < PASS_LEN) { // Only accept numeric characters and up to 6 digits
+            password[i] = ch;
+            printf("*");
+            i++;
+        }
+    }
+
+    password[i] = '\0';
+  
+
+    printf("\n");
+
+    return password;
+}
+
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize)
 {
     // First, count the number of nodes
@@ -1161,6 +1201,7 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
         perror("Error opening file");
         return;
     }
+    printf("ddd");
 
     char headerFile[100];
     char dataType[100];
@@ -1170,6 +1211,7 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
 
     // Write the header line
     fprintf(file, strcat(headerFile, "\n"));
+
 
     UserNode *current = head;
     while (current != NULL)
@@ -1185,7 +1227,13 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
                 user.balance,
                 user.active,
                 user.status,
-                user.registerTime);
+                user.registerTime,
+                user.password
+
+                );
+
+    fprintf(file,"\n");
+
 
         current = current->next;
     }
@@ -1389,7 +1437,7 @@ int getMaxAccountID(){
     FILE *file = fopen(USERS_DATA, "r"); // Replace "data.csv" with your CSV file name
     if (file == NULL) {
         perror("Error opening file");
-        return 1;
+        return 0;
     }
 
     int columnToRead = 1; // Specify the column index you want to read (0-based index)
@@ -1424,7 +1472,8 @@ int getMaxAccountID(){
 
 void getNewAccountID(User *user){
     char maxStrLen[MAX_ACCCOUNT_ID_SIZE];
-    int maxID = getMaxAccountID(1)+1;
+
+    int maxID = getMaxAccountID()+1;
 
     itoa(maxID,maxStrLen ,10);
     printf("Max AccountID : %s \n",maxStrLen);
@@ -1463,11 +1512,17 @@ User Register(const char id[], const char fname[], const char lname[], int age)
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
     newUser.registerTime[sizeof(newUser.registerTime) - 1] = '\0';
+    
 
     getNewAccountID(&newUser);
     newUser.active = 1;
     newUser.status = 1;
     newUser.balance =  0.00;
+
+    strncpy(newUser.password, createPassword(), sizeof(newUser.password));
+    newUser.password[sizeof(newUser.password)] = '\0';
+
+    
 
     
     printf("================ New User ============\n");
@@ -1478,6 +1533,7 @@ User Register(const char id[], const char fname[], const char lname[], int age)
     printf("AccountID           : %s \n", newUser.accountID);
     printf("Balance             :\033[38;5;48m %.2lf \033[0m \n", newUser.balance);
     printf("Register Time       : %s \n", newUser.registerTime);
+    printf("Password            : %s \n",newUser.password);
     printf("======================================\n");
 
     if (isfileExists(USERS_DATA))
@@ -1607,7 +1663,9 @@ void saveUser(const char *filename, const User *userData)
             userData->balance,
             userData->active,
             userData->status,
-            userData->registerTime);
+            userData->registerTime,
+            userData->password
+            );
 
     // Close the file
     fclose(file);
@@ -1642,7 +1700,9 @@ void appendToCSV(const char *filename, const User *userData)
             userData->balance,
             userData->active,
             userData->status,
-            userData->registerTime);
+            userData->registerTime,
+            userData->password
+            );
 
     // Close the file
     fclose(file);
@@ -1697,6 +1757,8 @@ Table processCSVToLinkedList(const char *filename, int choice)
         }
     }
 
+
+
     // Process the data lines
     while (fgets(line, sizeof(line), file) && currentRow <= MAX_ROW)
     {
@@ -1735,6 +1797,9 @@ Table processCSVToLinkedList(const char *filename, int choice)
 
             if (strcmp(fieldNames[currentField + 1], FIELD_NAME[8]) == 0)
                 copyTo(userData.registerTime, token, sizeof(userData.registerTime));
+
+             if (strcmp(fieldNames[currentField + 1], FIELD_NAME[9]) == 0)
+                copyTo(userData.password, token, sizeof(userData.password));
 
             // Remove trailing newline character from the token, if present
             size_t len = strlen(token);
@@ -1788,7 +1853,6 @@ Table processCSVToLinkedList(const char *filename, int choice)
     fclose(file);
 
     int arraySize;
-
     userArray = linkedListToArray(userHead, currentRow - 1, &arraySize);
 
     csvDataTable.numRows = currentRow - 1;
@@ -1912,6 +1976,27 @@ void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result
     }
 }
 
+char* createPassword(){
+    
+        while (1)
+        {
+            char *password , *confirmpassword;
+        
+            printf("\nCreate Password: \n");
+            password = getPassword(6);
+            printf("\nConfirm Password : \n");
+            confirmpassword = getPassword(6);
+
+            if(strcmp(password,confirmpassword) == 0){
+                printf("%s\n", "\033[1;32mYour passwords is match.\033[0m");
+                return password;          
+            }else{
+                system("cls");
+                printf("%s\n", "\033[1;31mYour passwords aren't match!\033[0m");
+            }
+        }
+    }
+
 int main(int argc, char const *argv[])
 {
     printf("\033[?25l"); // hide cursor
@@ -1928,10 +2013,9 @@ int main(int argc, char const *argv[])
 
     printf("Program started at: %s", asctime(localTime));
 
-    /* User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21); */
+    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
 
     getch();
-
 
     User *UserArray;
     UserNode *UserList;
