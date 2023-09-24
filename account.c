@@ -89,7 +89,7 @@ typedef struct User
     int active;
     int status;
     char registerTime[50];
-    char password[6];
+    char password[7];
 
 } User;
 
@@ -171,8 +171,6 @@ time_t lastestTime;
 
 UserNode *editUserData(UserNode *userDetail)
 {
-
-    
     printf("ID           %-5s %s \n", ":", userDetail->data.id);
     printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
     printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
@@ -201,26 +199,26 @@ UserNode *editUserData(UserNode *userDetail)
     int lLname = getStringInput(nLname, sizeof(nLname));
     printf("\033[0m");
 
-    printf("New Age : ");
+  /*   printf("New Age : ");
     printf("\033[38;5;75m");
     int lAge = getStringInput(nAge, sizeof(nAge));
     printf("\033[0m");
-
+ */
     /*  printf("%d %d %d",lFname,lLname,lAge); */
 
     if (lFname == 1)
         strcpy(nFname, userDetail->data.fname);
     if (lLname == 1)
         strcpy(nLname, userDetail->data.lname);
-    if (lAge == 1)
-        sprintf(nAge, "%d", userDetail->data.age);
+    /* if (lAge == 1)
+        sprintf(nAge, "%d", userDetail->data.age); */
 
     printf("\n");
     printf("Check new data \n");
     printf("=====================================\n");
     printf("%-15s -> %s \n", userDetail->data.fname, nFname);
     printf("%-15s -> %s \n", userDetail->data.lname, nLname);
-    printf("%-15d -> %s \n", userDetail->data.age, nAge);
+   /*  printf("%-15d -> %s \n", userDetail->data.age, nAge); */
     printf("=====================================\n");
 
     printf("Commit the change ? \n");
@@ -231,6 +229,7 @@ UserNode *editUserData(UserNode *userDetail)
     strcpy(userDetail->data.fname, nFname);
     strcpy(userDetail->data.lname, nLname);
     userDetail->data.age = atoi(nAge);
+
 
     return userDetail;
 }
@@ -390,11 +389,11 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         
                         char ch2;
                         ch2 = getch();
-                        printf("> %d",ch2);
                         getch();
                         switch (ch2)
                         {
                         case ENTER_KEY:
+
 
                             saveLinkedListToCSV(USERS_DATA, USER_LIST);
 
@@ -941,6 +940,8 @@ List displayUserList(int choice, int page)
 
         userList.numRows = i - 1;
         userList.userData = detail;
+
+  
         return userList;
     }
 }
@@ -956,7 +957,6 @@ int selectUserList(int min, int max, selectedList tableCallBack)
     float numRows = 0;
     List rowDetail;
     rowDetail = tableCallBack(row, page);
-
     currnentID = rowDetail.currentID;
     row = rowDetail.currentRow;
 
@@ -1065,8 +1065,9 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                     USER_MENU[2] = rowDetail.userData->data.active == 0 ? "Active Card" : "Suspend Card";
                     USER_MENU[3] = rowDetail.userData->data.status == 0 ? "Enable Card" : "Disabled Card";
 
-                    checkFileChangeOnce(USERS_DATA);
+                    /* checkFileChangeOnce(USERS_DATA); */
                     int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Action", rowDetail.userData);
+   
 
                     if (exitUserMenu == 0)
                     {
@@ -1201,7 +1202,6 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
         perror("Error opening file");
         return;
     }
-    printf("ddd");
 
     char headerFile[100];
     char dataType[100];
@@ -1689,7 +1689,6 @@ void appendToCSV(const char *filename, const User *userData)
     // Write the header row
 /*     fprintf(file, strcat(headerFile, "\n")); */
 
-    fprintf(file,"\n");
     // Write User data
     fprintf(file, dataType,
             userData->id,
@@ -1703,6 +1702,8 @@ void appendToCSV(const char *filename, const User *userData)
             userData->registerTime,
             userData->password
             );
+    fprintf(file,"\n");
+
 
     // Close the file
     fclose(file);
@@ -2014,7 +2015,6 @@ int main(int argc, char const *argv[])
     printf("Program started at: %s", asctime(localTime));
 
     User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
-
     getch();
 
     User *UserArray;
@@ -2041,7 +2041,7 @@ int main(int argc, char const *argv[])
     USER_LIST = userData.list;
 
     selectUserList(1, userData.numRows, displayUserList);
-
+   /*  remove(USERS_DATA); */
     getch();
     return 0;
 }
