@@ -984,8 +984,14 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     if (row == MAX_LIST_ROW * (page - 1) + 1)
                     {
+                        if(numRows == 0){
+
                         row = MAX_LIST_ROW * (page);
+                        }else{
+                            row = numRows;
+                        }
                     }
+
                     else if (row > MAX_LIST_ROW * (page - 1) + 1)
                     {
                         row -= 1;
@@ -994,14 +1000,14 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                     {
                         row = MAX_LIST_ROW * (page);
                     }
+                
 
                     checkFileChangeOnce(USERS_DATA);
                     rowDetail = tableCallBack(row, page);
-
-                    /* printf("%d", MAX_LIST_ROW * (page - 1) + 1); */
-
                     currnentID = rowDetail.currentID;
                     row = rowDetail.currentRow;
+                    numRows = rowDetail.numRows;
+
 
                     break;
 
@@ -1021,6 +1027,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     row = MAX_LIST_ROW * (page - 1) + flag;
 
+
                     rowDetail = tableCallBack(row, page);
                     numRows = rowDetail.numRows;
                 }
@@ -1031,6 +1038,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     float flag = row % MAX_LIST_ROW;
                     page += 1;
+
                     if (flag == 0)
                         flag = MAX_LIST_ROW;
 
@@ -1038,17 +1046,30 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     rowDetail = tableCallBack(row, page);
                     numRows = rowDetail.numRows;
+
+                    if(row > numRows){
+                        row = numRows;
+                        rowDetail = tableCallBack(row, page);
+                        numRows = rowDetail.numRows;
+                    }
+                    
                 }
                 break;
                 case DOWN_KEY: // Down arrow key
 
-                    if (row < MAX_LIST_ROW * (page))
+                    if(numRows == 0 && row == MAX_LIST_ROW)
+                    {   
+                        row = MAX_LIST_ROW * (page - 1) + 1;
+
+                    }
+                    else if(numRows > 0 && row == numRows)
+                    {   
+                        printf("");
+                        row = MAX_LIST_ROW * (page - 1) + 1;
+                    }
+                    else if (row < MAX_LIST_ROW * (page))
                     {
                         row += 1;
-                    }
-                    else
-                    {
-                        row = MAX_LIST_ROW * (page - 1) + 1;
                     }
 
                     checkFileChangeOnce(USERS_DATA);
@@ -1056,13 +1077,21 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                     rowDetail = tableCallBack(row, page);
                     currnentID = rowDetail.currentID;
                     row = rowDetail.currentRow;
+                    numRows = rowDetail.numRows;
+             
 
+                    printf("%d \n",row);
+                    printf("%.2f \n",numRows);
+
+
+                 
                     break;
 
                 case ENTER_KEY:
                 {
 
-                    USER_MENU[2] = rowDetail.userData->data.active == 0 ? "Active Card" : "Suspend Card";
+                   if(rowDetail.userData){
+                     USER_MENU[2] = rowDetail.userData->data.active == 0 ? "Active Card" : "Suspend Card";
                     USER_MENU[3] = rowDetail.userData->data.status == 0 ? "Enable Card" : "Disabled Card";
 
                     /* checkFileChangeOnce(USERS_DATA); */
@@ -1073,6 +1102,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                     {
                         rowDetail = tableCallBack(row, page);
                     }
+                   }
 
                     break;
                 }
@@ -1103,9 +1133,10 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                         getch();
                         rowDetail = tableCallBack(row, page);
-
                         currnentID = rowDetail.currentID;
                         row = rowDetail.currentRow;
+                        numRows = rowDetail.numRows;
+
                     }
                     else
                     {
@@ -2014,7 +2045,7 @@ int main(int argc, char const *argv[])
 
     printf("Program started at: %s", asctime(localTime));
 
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
+    //User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
     getch();
 
     User *UserArray;
