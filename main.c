@@ -11,7 +11,7 @@
 
 
 #include "config.c"
-#include "module/array.c"
+#include "lib/array.c"
 /* #include "account.c" */
 
 
