@@ -364,7 +364,6 @@ void readFile() {
 }
 
 char* getPassword(){
-    PASS_SIZE = 2;
     char* password = (char*)malloc(9 * sizeof(char));; 
     char ch;
     int i = 0;
