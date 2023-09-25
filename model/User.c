@@ -46,8 +46,3 @@ typedef struct List
 
 } List;
 
-typedef struct SearchData
-{
-    int result;
-    User *user;
-} SearchData;

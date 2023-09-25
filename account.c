@@ -11,9 +11,15 @@
 
 #include "config.c"
 
+#include "model/User.c"
+
 #include "lib/key.c"
 #include "lib/array.c"
+#include "lib/sort.c"
+
 #include "lib/file.c"
+#include "lib/search.c"
+
 
 // Money Color \033[38;5;48m
 
@@ -41,7 +47,6 @@ List displayUserList(int choice, int page);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
 
 
-User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
 UserNode *deleteUser(int id);
 UserNode *editUserData(UserNode *userDetail);
 SearchData searchTel(char tel[10]);
@@ -1262,28 +1267,6 @@ UserNode *deleteUser(int id)
     return USER_LIST; // Return the head of the modified list
 }
 
-char *getCurrentTime()
-{
-    time_t current_time;
-    struct tm *time_info;
-    char *time_string = (char *)malloc(50 * sizeof(char)); // Allocate memory for the string
-
-    if (time_string == NULL)
-    {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
-        // Exit the program if memory allocation fails
-    }
-    // Get the current time
-    time(&current_time);
-
-    // Convert the current time to a struct tm
-    time_info = localtime(&current_time);
-
-    // Format the time as a string
-    strftime(time_string, 50, "%Y-%m-%d %H:%M:%S", time_info);
-    return time_string; // Return the dynamically allocated string
-}
 
 int getRowsByColumn(int index)
 {
@@ -1481,136 +1464,10 @@ void generateRandomUserData(User *u)
     /*   u->age = 18 + rand() % 43; */
 }
 
-SearchData binarySearchTel(User arr[], int size, int target)
-{   
-    int left = 0;
-    int right = size - 1;
-    SearchData FoundUser;
 
-    while (left <= right)
-    {
-        int mid = left + (right - left) / 2;
-        if (atoi(arr[mid].tel) == target)
-        {
-            FoundUser.result = 1;
-            FoundUser.user = &arr[mid];
 
-            return FoundUser; // Found the target value
-        }
-        else if (atoi(arr[mid].tel) < target)
-        {
-            left = mid + 1; // Search the right half
-        }
-        else
-        {
-            right = mid - 1; // Search the left half
-        }
-    }
 
-    FoundUser.result = 0;
-    FoundUser.user = NULL;
 
-    return FoundUser;
-}
-
-SearchData binarySearchAccountID(User arr[], int size, int target)
-{
-    int left = 0;
-    int right = size - 1;
-    SearchData FoundUser;
-
-    while (left <= right)
-    {
-        int mid = left + (right - left) / 2;
-
-        if (atoi(arr[mid].accountID) == target)
-        {
-            FoundUser.result = 1;
-            FoundUser.user = &arr[mid];
-
-            return FoundUser; // Found the target value
-        }
-        else if (atoi(arr[mid].accountID) < target)
-        {
-            left = mid + 1; // Search the right half
-        }
-        else
-        {
-            right = mid - 1; // Search the left half
-        }
-    }
-
-    FoundUser.result = 0;
-    FoundUser.user = NULL;
-
-    return FoundUser;
-}
-
-SearchData searchTel(char tel[10])
-{
-
-    qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByTel);
-
-    SearchData result = binarySearchTel(USER_ARR, USER_ARR_SIZE, atoi(tel));
-
-    if(_SEARCH_RESULT){
-        if (result.result)
-        {
-            printf("\n============== Search Result ==============\n");
-
-            printf(" #              : %d \n", result.user->_id);
-            printf(" ID             : %s \n", result.user->id);
-            printf(" fname          : %s \n", result.user->fname);
-            printf(" lname          : %s \n", result.user->lname);
-            printf(" tel            : %s \n", result.user->tel);
-            printf(" accountID      : %s \n", result.user->accountID);
-            printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", result.user->balance);
-            printf("\n============== Card Status =============\n");
-            printf(" active         : %s \n", result.user->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
-            printf(" status         : %s \n", result.user->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
-            printf(" registerDate   : %s \n", result.user->registerTime);
-            printf("==============================================\n");
-        }
-        else
-        {
-            printf("\n============== Search Result ==============\n");
-            printf("Tel.  \033[38;5;75m %s  \033[0m Is Not Found\n", tel);
-            printf("==============================================\n");
-        }
-    }
-        return result;
-
-}
-
-void searchAccount(char arrcountID[])
-{
-
-    SearchData result = binarySearchAccountID(USER_ARR, USER_ARR_SIZE, atoi(arrcountID));
-
-    if (result.result)
-    {
-        printf("\n============== Seearch Result ==============\n");
-
-        printf(" #              : %d \n", result.user->_id);
-        printf(" ID             : %s \n", result.user->id);
-        printf(" fname          : %s \n", result.user->fname);
-        printf(" lname          : %s \n", result.user->lname);
-        printf(" tel            : %s \n", result.user->tel);
-        printf(" accountID      : %s \n", result.user->accountID);
-        printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", result.user->balance);
-        printf("\n============== Card Status =============\n");
-        printf(" active         : %s \n", result.user->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
-        printf(" status         : %s \n", result.user->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
-        printf(" registerDate   : %s \n", result.user->registerTime);
-        printf("==============================================\n");
-    }
-    else
-    {
-        printf("\n============== Seearch Result ==============\n");
-        printf("ID  \033[38;5;75m %s  \033[0m Is Not Found\n", arrcountID);
-        printf("==============================================\n");
-    }
-}
 
 
 
@@ -1640,9 +1497,6 @@ char *createPassword()
 }
 
 
-int sortByTel(const void* a, const void* b) {
-    return strcmp(((User*)a)->tel, ((User*)b)->tel);
-}
 
 
 int main(int argc, char const *argv[])
@@ -1655,7 +1509,6 @@ int main(int argc, char const *argv[])
     }
 
     struct tm *localTime;
-    // Get the current time
     time(&lastestTime);
     localTime = localtime(&lastestTime);
 
@@ -1663,10 +1516,10 @@ int main(int argc, char const *argv[])
 
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
     
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
+   /*  User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
     getch();
 
-    userData = processCSVToLinkedList(USERS_DATA, 1);
+    userData = processCSVToLinkedList(USERS_DATA, 1); */
 
     printf("Users Numbers : %d \n", USER_ARR_SIZE);
 

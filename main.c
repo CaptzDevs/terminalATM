@@ -363,75 +363,10 @@ void readFile() {
     fclose(file);
 }
 
-char* getPassword(){
-    char* password = (char*)malloc(9 * sizeof(char));; 
-    char ch;
-    int i = 0;
-
-    printf("> Enter your password: ");
-
-    while (1) {
-        ch = getch(); 
-        if (ch == 13) 
-            break;
-        else if (ch == 8) {
-            if (i > 0) {
-                i--;
-                printf("\b \b"); 
-            }
-        }
-      else if (ch >= '0' && ch <= '9' && i < 8) { // Only accept numeric characters and up to 8 digits
-            password[i] = ch;
-            printf("*");
-            i++;
-        }
-    }
-
-    password[i] = '\0'; 
-    //printf("\nYour password is: %s\n", password);
-    return password;
-}
 
 
-int checkPassword(){
-    //Validate Password
-    char *password = getPassword();
-    int checkPassword = 1;
-
-    while (checkPassword <= 3 && strcmp(password,PASSWORD) != 0)
-    {
-
-        /* system("cls"); */
-      /*   printf("\nchecking...");
-        loadingCircle(2); */
-
-        printf("\033[1;91m");
-        printf("\rWrong Password %d times Try again\n",checkPassword);
-        printf("\033[1;0m");
-        
-
-        if(checkPassword == 3){
-            printf("\033[1;91m\n\033[1F");
-            printf("xxxxxxxxxxxxxxxxxxxxxxxx\n");
-            printf("Wrong Password 3 Times\n");
-            printf("Exit Program\n");
-            printf("xxxxxxxxxxxxxxxxxxxxxxxx\n");
-            printf("\033[1;0m");
-
-            exit(0);
-        }
-        
-        password = getPassword();
-        checkPassword++;
 
 
-    }
-
-        if(strcmp(password,PASSWORD) == 0){
-            printf("\033[1;32m \r| Password CORRECT [/]        \033[1;0m\n");
-            return 1;
-        }
-}
 
 int selectMenu(int min , char arr[][50] , selectedMenu displayMenuCallback , char header[]){
     char ch ;

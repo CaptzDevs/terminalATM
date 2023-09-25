@@ -15,7 +15,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "../model/User.c"
 
 #define USERS_DATA "./data/Users.csv"
 #define ACCOUNTS_DATA "./data/Accounts.csv"
@@ -85,8 +84,11 @@ int checkFileChangeOnce(const char *filename);
 int isfileExists(const char *filename);
 int getListSize(UserNode *list);
 
+char *getCurrentTime();
+
 Table processCSVToLinkedList(const char *filename, int choice);
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
+
 
 
 void saveLinkedListToCSV(const char *filename, UserNode *head)
@@ -129,6 +131,52 @@ void saveLinkedListToCSV(const char *filename, UserNode *head)
         fprintf(file, "\n");
 
         current = current->next;
+    }
+
+    fclose(file);
+}
+
+void saveArrayToCSV(const char *filename, User *userArr ,int size)
+{
+
+    FILE *file = fopen(filename, "w");
+    int i = 0;
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    char headerFile[100];
+    char dataType[100];
+
+    qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID);
+
+    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
+    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
+
+    fprintf(file, strcat(headerFile, "\n"));
+
+    while (i < size)
+    {
+
+        fprintf(file, dataType,
+                userArr[i].id,
+                userArr[i].accountID,
+                userArr[i].fname,
+                userArr[i].lname,
+                userArr[i].tel,
+                userArr[i].balance,
+                userArr[i].active,
+                userArr[i].status,
+                userArr[i].registerTime,
+                userArr[i].password
+        );
+        
+
+        i++;
+        fprintf(file, "\n");
+
     }
 
     fclose(file);
@@ -328,6 +376,31 @@ int getListSize(UserNode *list)
         return count;
     }
 }
+
+
+char *getCurrentTime()
+{
+    time_t current_time;
+    struct tm *time_info;
+    char *time_string = (char *)malloc(50 * sizeof(char)); // Allocate memory for the string
+
+    if (time_string == NULL)
+    {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+        // Exit the program if memory allocation fails
+    }
+    // Get the current time
+    time(&current_time);
+
+    // Convert the current time to a struct tm
+    time_info = localtime(&current_time);
+
+    // Format the time as a string
+    strftime(time_string, 50, "%Y-%m-%d %H:%M:%S", time_info);
+    return time_string; // Return the dynamically allocated string
+}
+
 
 Table processCSVToLinkedList(const char *filename, int choice)
 {
