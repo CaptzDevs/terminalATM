@@ -112,6 +112,9 @@ Login login(char accountID[14]){
     SearchData userData = searchID(accountID);
     int isValidPassword;
 
+    printf("Login \n");
+    printf("=========================\n");
+
     char accID[14];
     strcpy(accID,userData.user->accountID);
 

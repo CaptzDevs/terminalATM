@@ -47,14 +47,13 @@ Transection transfers(User *userData ,char* destinationAccount, double amount);
 
 
 Transection check(User *userData){
-    printf("========================\n");
+    printf("=================================\n");
 
     printf("Checking\n");
     printf("Account ID  >   %s\n",userData->accountID);
     printf("Balance     >   \033[38;5;48m\033[4m%.2lf\033[0m \n",userData->balance);
-    printf("========================\n");
 
-
+    printf("=================================\n");
 
 }
 
@@ -67,13 +66,14 @@ Transection deposit(User *userData , double amount){
 
     saveArrayToCSV(USERS_DATA,USER_ARR,USER_ARR_SIZE);
 
-    printf("========================\n");
+    printf("=================================\n");
 
     printf("\033[1;32mDeposit %.2lf Success \033[0m\n", amount);
     printf("Balance     >   \033[38;5;48m\033[4m%.2lf\033[0m \n",userData->balance);
-    printf("========================\n");
 
-    
+    printf("=================================\n");
+
+
     transectionDetail.result = 1;
     strcpy(transectionDetail.time,getCurrentTime());
     transectionDetail.type = type;
@@ -92,11 +92,11 @@ Transection withdraw(User *userData , double amount){
 
     saveArrayToCSV(USERS_DATA,USER_ARR,USER_ARR_SIZE);
 
-    printf("========================\n");
-
+    printf("=================================\n");
     printf("\033[1;32mWithdraw %.2lf Success \033[0m\n", amount);
     printf("Balance     >   \033[38;5;48m\033[4m%.2lf\033[0m \n",userData->balance);
-    printf("========================\n");
+    printf("=================================\n");
+
     
     transectionDetail.result = 1;
     strcpy(transectionDetail.time,getCurrentTime());
@@ -125,12 +125,22 @@ Transection transfers(User *userData ,char* destinationAccount, double amount){
 
         saveArrayToCSV(USERS_DATA,USER_ARR,USER_ARR_SIZE);
 
-        printf("========================\n");
+        printf("============ Transfers ============\n");
 
+        printf("From      %s\n",userData->accountID);
+        printf("              |\n");
+        printf("              |\n");
+        printf("\033[38;5;48m");
+        printf("Amount     %.2lf \033[0m\n",amount);
+        printf("              |\n");
+        printf("              |\n");
+        printf("              V\n");
+        printf("To        %s\n", destinationAccount);
+        printf("----------------------------------\n");
         printf("\033[1;32mTransfers %.2lf Success \033[0m\n", amount);
         printf("Balance     >   \033[38;5;48m\033[4m%.2lf\033[0m \n",userData->balance);
 
-        printf("========================\n");
+        printf("=================================\n");
         
         transectionDetail.result = 1;
         strcpy(transectionDetail.time,getCurrentTime());
@@ -146,7 +156,7 @@ int main(int argc, char const *argv[])
 {
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
 
-    Login loginData = login("1909300007098");
+    Login loginData = login("1909300007010");
 
     if(loginData.isLogin == 1){
         printf("Logged : %s",loginData.loginTime);
@@ -163,24 +173,13 @@ int main(int argc, char const *argv[])
     }
 
 
-  /*   deposit(USER_SEESION.User,100);
-    withdraw(USER_SEESION.User,200); */
-
-    deposit(USER_SEESION.User,100);
-    transfers(USER_SEESION.User,"00000000010",200);
+    deposit(USER_SEESION.User,1500);
+    transfers(USER_SEESION.User,"00000000010",22300);
     withdraw(USER_SEESION.User,200);
 
 
     check(USER_SEESION.User);
     
-
-    
-
-
-
-
-
-
     
 
     
