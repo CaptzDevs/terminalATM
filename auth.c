@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "model/User.c"
+/* #include "model/User.c"
 
 #include "config.c"
 #include "lib/key.c"
@@ -17,7 +17,7 @@
 #include "lib/sort.c"
 
 #include "lib/file.c"
-#include "lib/search.c"
+#include "lib/search.c" */
 
 
 
@@ -29,6 +29,9 @@ typedef struct Login
 
     
 } Login;
+
+Login USER_SEESION;
+
 
 char* getPassword();
 int checkPassword(char* storedPassword);
@@ -107,25 +110,34 @@ int checkPassword(char* storedPassword){
 Login login(char accountID[14]){
 
     SearchData userData = searchID(accountID);
-    Login loginData;
     int isValidPassword;
-    if(userData.result){
+
+    char accID[14];
+    strcpy(accID,userData.user->accountID);
+
+    if(userData.result == 1){
 
          isValidPassword = checkPassword(userData.user->password);
          
          if(isValidPassword){
 
-            loginData.isLogin = 1;
-            strcpy(loginData.loginTime, getCurrentTime());
-            loginData.User = userData.user;
+            USER_SEESION.isLogin = 1;
+            strcpy(USER_SEESION.loginTime, getCurrentTime());
 
+            qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID); 
 
-            return loginData;
+            userData = searchAccount(accID);
+
+            USER_SEESION.User = userData.user;
+
+            USER_SEESION = USER_SEESION;
+
+            return USER_SEESION;
          }else{
-            loginData.isLogin = 0;
-            strcpy(loginData.loginTime, '\0');
+            USER_SEESION.isLogin = 0;
+            strcpy(USER_SEESION.loginTime, '\0');
 
-            return loginData;
+            return USER_SEESION;
          }
 
     }else{
@@ -135,26 +147,3 @@ Login login(char accountID[14]){
 
 
 
-
-
-int main(int argc, char const *argv[])
-{
-    Table userData = processCSVToLinkedList(USERS_DATA, 1);
-
-    Login loginData = login("1909300007094");
-
-    if(loginData.isLogin){
-        printf("Logged : %s",loginData.loginTime);
-        printf("Logged : %s",loginData.loginTime);
-
-        int i = 0;
-
-        strcpy(loginData.User->fname , "EIEI"); 
-
-
-        saveArrayToCSV(USERS_DATA,USER_ARR,USER_ARR_SIZE);
-
-    }
-
-    
-}

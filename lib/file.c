@@ -150,7 +150,7 @@ void saveArrayToCSV(const char *filename, User *userArr ,int size)
     char headerFile[100];
     char dataType[100];
 
-    qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID);
+    /* qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID); */
 
     concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
     concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
@@ -540,6 +540,7 @@ Table processCSVToLinkedList(const char *filename, int choice)
     int arraySize;
     userArray = linkedListToArray(userHead, currentRow - 1, &arraySize);
 
+
     csvDataTable.numRows = currentRow - 1;
     csvDataTable.numCols = fieldCount;
 
@@ -550,6 +551,8 @@ Table processCSVToLinkedList(const char *filename, int choice)
     USER_LIST = userHead;
     USER_ARR = userArray;
     USER_ARR_SIZE = arraySize;
+
+    qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID);
 
     printf("\n Process User Table [/]\n");
 

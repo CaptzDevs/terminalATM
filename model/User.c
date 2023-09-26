@@ -14,7 +14,6 @@ typedef struct User
 
 } User;
 
-
 typedef struct UserNode
 {
     User data;

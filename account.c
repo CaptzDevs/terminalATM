@@ -1516,15 +1516,10 @@ int main(int argc, char const *argv[])
 
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
     
-   /*  User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
+    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
     getch();
 
-    userData = processCSVToLinkedList(USERS_DATA, 1); */
-
-    printf("Users Numbers : %d \n", USER_ARR_SIZE);
-
-    getch();
-
+    userData = processCSVToLinkedList(USERS_DATA, 1);
     selectUserList(1, USER_ARR_SIZE, displayUserList);
 
     getch();
