@@ -22,31 +22,35 @@
 #include "./auth.c"
 
 
-typedef enum TransectionType {
+typedef enum TransactionType {
     Check = 1 ,
     Deposit = 2,
     Withdraw = 3,
     Transfers = 4,
 
-} TransectionType;
+} TransactionType;
 
-typedef struct Transection {
+typedef struct Transaction {
     int result;
     double amount;
     char time[50];
-    char balance[50];
-    TransectionType type;
+    char sourceAccount[14];
+    char destAccount[14];
+    TransactionType type;
 
-} Transection;
-
-
-Transection check(User *userData);
-Transection deposit(User *userData , double amount);
-Transection withdraw(User *userData , double amount);
-Transection transfers(User *userData ,char* destinationAccount, double amount);
+} Transaction;
 
 
-Transection check(User *userData){
+char LOG_DATA[100];
+
+Transaction check(User *userData);
+Transaction deposit(User *userData , double amount);
+Transaction withdraw(User *userData , double amount);
+Transaction transfers(User *userData ,char* destinationAccount, double amount);
+
+void saveTransaction(const char *filename , Transaction transactionDetail);
+
+Transaction check(User *userData){
     printf("=================================\n");
 
     printf("Checking\n");
@@ -57,10 +61,10 @@ Transection check(User *userData){
 
 }
 
-Transection deposit(User *userData , double amount){
+Transaction deposit(User *userData , double amount){
 
-    Transection transectionDetail;
-    TransectionType type = Deposit;
+    Transaction transactionDetail;
+    TransactionType type = Deposit;
 
     userData->balance += amount;
 
@@ -74,19 +78,28 @@ Transection deposit(User *userData , double amount){
     printf("=================================\n");
 
 
-    transectionDetail.result = 1;
-    strcpy(transectionDetail.time,getCurrentTime());
-    transectionDetail.type = type;
-    transectionDetail.amount = amount;
+    transactionDetail.result = 1;
+    strcpy(transactionDetail.time,getCurrentTime());
+    transactionDetail.type = type;
+    transactionDetail.amount = amount;
 
-    return transectionDetail;
+    strcpy(transactionDetail.sourceAccount,userData->accountID);
+    strcpy(transactionDetail.destAccount,userData->accountID);
+
+
+
+    saveTransaction(LOG_DATA,transactionDetail);
+
+    
+
+    return transactionDetail;
 
 }
 
-Transection withdraw(User *userData , double amount){
+Transaction withdraw(User *userData , double amount){
 
-    Transection transectionDetail;
-    TransectionType type = Withdraw;
+    Transaction transactionDetail;
+    TransactionType type = Withdraw;
 
     userData->balance -= amount;
 
@@ -98,20 +111,25 @@ Transection withdraw(User *userData , double amount){
     printf("=================================\n");
 
     
-    transectionDetail.result = 1;
-    strcpy(transectionDetail.time,getCurrentTime());
-    transectionDetail.type = type;
-    transectionDetail.amount = amount;
+    transactionDetail.result = 1;
+    strcpy(transactionDetail.time,getCurrentTime());
+    transactionDetail.type = type;
+    transactionDetail.amount = amount;
+    strcpy(transactionDetail.sourceAccount,userData->accountID);
+    strcpy(transactionDetail.destAccount,userData->accountID);
 
-    return transectionDetail;
+    saveTransaction(LOG_DATA,transactionDetail);
+
+
+    return transactionDetail;
 
 }
 
 
-Transection transfers(User *userData ,char* destinationAccount, double amount){
+Transaction transfers(User *userData ,char* destinationAccount, double amount){
     
-    Transection transectionDetail;
-    TransectionType type = Transfers;
+    Transaction transactionDetail;
+    TransactionType type = Transfers;
 
     qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID); 
     
@@ -142,21 +160,72 @@ Transection transfers(User *userData ,char* destinationAccount, double amount){
 
         printf("=================================\n");
         
-        transectionDetail.result = 1;
-        strcpy(transectionDetail.time,getCurrentTime());
-        transectionDetail.type = type;
-        transectionDetail.amount = amount; 
+        transactionDetail.result = 1;
+        strcpy(transactionDetail.time,getCurrentTime());
+        transactionDetail.type = type;
+        transactionDetail.amount = amount; 
+        strcpy(transactionDetail.sourceAccount,userData->accountID);
+        strcpy(transactionDetail.destAccount,destinationAccount);
 
-        return transectionDetail;
+        saveTransaction(LOG_DATA,transactionDetail);
+
+
+        return transactionDetail;
     }
 
 }
+
+void saveTransaction(const char *filename , Transaction transactionDetail)
+{
+    int isfileExist = isfileExists(filename);
+
+ FILE *file ;
+    if(isfileExist == 1) {
+        file = fopen(filename, "a");
+
+    }else{
+       file = fopen(filename, "w");
+    }
+
+    
+    if (file == NULL)
+    {
+        perror("Unable to open file");
+        exit(1);
+    }
+
+    char headerFile[100];
+    char dataType[100];
+
+    // Write the header row1
+    if(isfileExist == 0) {
+
+        fprintf(file, "sourceAccount,destAccount,amount,result,type,time\n");
+
+    }
+
+    // Write User data
+    fprintf(file, "%s,%s,%.2lf,%d,%d,%s",
+            transactionDetail.sourceAccount,
+            transactionDetail.destAccount,
+            transactionDetail.amount,
+            transactionDetail.result,
+            transactionDetail.type,
+            transactionDetail.time
+
+            );
+            
+            fprintf(file,"\n");
+    // Close the file
+    fclose(file);
+}
+
 
 int main(int argc, char const *argv[])
 {
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
 
-    Login loginData = login("1909300007010");
+    Login loginData = login("1909300007098");
 
     if(loginData.isLogin == 1){
         printf("Logged : %s",loginData.loginTime);
@@ -168,6 +237,13 @@ int main(int argc, char const *argv[])
         printf("%s %s \n",USER_SEESION.User->fname , USER_SEESION.User->lname);
         printf("============================\n");
 
+        strcat(LOG_DATA,"./transactions/");
+        strcat(LOG_DATA,USER_SEESION.User->accountID);
+        strcat(LOG_DATA,".csv");
+
+        printf(">> %s",LOG_DATA);
+
+
     }else{
         return 0;
     }
@@ -176,10 +252,7 @@ int main(int argc, char const *argv[])
     deposit(USER_SEESION.User,1500);
     transfers(USER_SEESION.User,"00000000010",22300);
     withdraw(USER_SEESION.User,200);
-
-
     check(USER_SEESION.User);
-    
     
 
     
