@@ -41,7 +41,7 @@ typedef struct Transaction {
 } Transaction;
 
 
-char LOG_DATA[100];
+char TRANSACTION_DATA[30];
 
 Transaction check(User *userData);
 Transaction deposit(User *userData , double amount);
@@ -88,7 +88,7 @@ Transaction deposit(User *userData , double amount){
 
 
 
-    saveTransaction(LOG_DATA,transactionDetail);
+    saveTransaction(TRANSACTION_DATA,transactionDetail);
 
     
 
@@ -118,7 +118,7 @@ Transaction withdraw(User *userData , double amount){
     strcpy(transactionDetail.sourceAccount,userData->accountID);
     strcpy(transactionDetail.destAccount,userData->accountID);
 
-    saveTransaction(LOG_DATA,transactionDetail);
+    saveTransaction(TRANSACTION_DATA,transactionDetail);
 
 
     return transactionDetail;
@@ -167,7 +167,16 @@ Transaction transfers(User *userData ,char* destinationAccount, double amount){
         strcpy(transactionDetail.sourceAccount,userData->accountID);
         strcpy(transactionDetail.destAccount,destinationAccount);
 
-        saveTransaction(LOG_DATA,transactionDetail);
+        char destAccTransaction[30];
+        destAccTransaction[0] = '\0';
+
+        strcat(destAccTransaction,"./transactions/");
+        strcat(destAccTransaction,destinationAccount);
+        strcat(destAccTransaction,".csv");
+
+        saveTransaction(TRANSACTION_DATA,transactionDetail);
+        saveTransaction(destAccTransaction,transactionDetail);
+        
 
 
         return transactionDetail;
@@ -225,7 +234,7 @@ int main(int argc, char const *argv[])
 {
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
 
-    Login loginData = login("1909300007098");
+    Login loginData = login("1909300007093");
 
     if(loginData.isLogin == 1){
         printf("Logged : %s",loginData.loginTime);
@@ -237,11 +246,11 @@ int main(int argc, char const *argv[])
         printf("%s %s \n",USER_SEESION.User->fname , USER_SEESION.User->lname);
         printf("============================\n");
 
-        strcat(LOG_DATA,"./transactions/");
-        strcat(LOG_DATA,USER_SEESION.User->accountID);
-        strcat(LOG_DATA,".csv");
+        strcat(TRANSACTION_DATA,"./transactions/");
+        strcat(TRANSACTION_DATA,USER_SEESION.User->accountID);
+        strcat(TRANSACTION_DATA,".csv");
 
-        printf(">> %s",LOG_DATA);
+        printf(">> %s",TRANSACTION_DATA);
 
 
     }else{
@@ -250,7 +259,7 @@ int main(int argc, char const *argv[])
 
 
     deposit(USER_SEESION.User,1500);
-    transfers(USER_SEESION.User,"00000000010",22300);
+    transfers(USER_SEESION.User,"00000000009",22300);
     withdraw(USER_SEESION.User,200);
     check(USER_SEESION.User);
     
