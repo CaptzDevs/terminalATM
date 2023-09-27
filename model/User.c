@@ -31,6 +31,9 @@ typedef struct Table
 
 } Table;
 
+
+
+
 typedef struct List
 {
     int numRows;
