@@ -24,7 +24,7 @@
 #define MAX_FIELDS 15
 #define MAX_ROW 30000
 #define MAX_LIST_ROW 10
-#define MAX_ACCCOUNT_ID_SIZE 11
+#define MAX_ACCCOUNT_ID_SIZE 10
 
 //*---------------------------------
 

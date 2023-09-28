@@ -2,7 +2,7 @@
 #define EXIST_KEY 27
 #define ENTER_KEY 13
 #define DELETE_KEY 83
-#define BACKSPACE 8
+#define BACKSPACE_KEY 8
 
 // Arrow Key Code
 #define UP_KEY 72

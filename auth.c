@@ -46,9 +46,9 @@ char* getPassword(){
 
     while (1) {
         ch = getch(); 
-        if (ch == 13) 
+        if (ch == ENTER_KEY) 
             break;
-        else if (ch == 6) {
+        else if (ch == BACKSPACE_KEY) {
             if (i > 0) {
                 i--;
                 printf("\b \b"); 
@@ -107,19 +107,19 @@ int checkPassword(char* storedPassword){
 }
 
 
-Login login(char accountID[14]){
+Login login(char userID[14]){
 
-    SearchData userData = searchID(accountID);
+    SearchData userData = searchID(userID);
     int isValidPassword;
 
     printf("Login \n");
     printf("=========================\n");
 
     char accID[14];
-    strcpy(accID,userData.user->accountID);
 
     if(userData.result == 1){
 
+        strcpy(accID,userData.user->accountID);
          isValidPassword = checkPassword(userData.user->password);
          
          if(isValidPassword){
@@ -144,7 +144,11 @@ Login login(char accountID[14]){
          }
 
     }else{
-        printf("Hello New User \n");
+             printf("Hello New User \n");
+            USER_SEESION.User = NULL;
+            USER_SEESION.isLogin = 0;
+
+            return USER_SEESION;
     }
 }
 

@@ -71,7 +71,7 @@ SearchData searchAccount(char arrcountID[])
 {
     SearchData result = binarySearchAccountID(USER_ARR, USER_ARR_SIZE, atoi(arrcountID));
 
-    showSearchResult(result , arrcountID, "Account ID : ");
+    //showSearchResult(result , arrcountID, "Account ID : ");
 
     return result;
 }

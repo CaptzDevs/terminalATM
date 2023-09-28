@@ -8,7 +8,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-
 #include "config.c"
 
 #include "model/User.c"
@@ -1065,7 +1064,7 @@ char *getPassword(int pass_len)
     while (i < PASS_LEN)
     {
         ch = getch();
-        if (ch == BACKSPACE)
+        if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
             {
@@ -1104,7 +1103,7 @@ char *getTel(int pass_len)
         ch = getch();
  
 
-        if (ch == BACKSPACE)
+        if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
             {
