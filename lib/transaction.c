@@ -24,7 +24,7 @@
 */
 
 
-#include "lib/auth.c" 
+#include "auth.c" 
 
 typedef enum TransactionType
 {

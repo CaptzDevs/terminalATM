@@ -25,7 +25,7 @@
 #include "lib/file.c"
 #include "lib/search.c"
 
-#include "transaction.c"
+#include "lib/transaction.c"
 
 /* ============== CONFIG ================ */
 
