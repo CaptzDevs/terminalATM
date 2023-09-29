@@ -20,6 +20,10 @@
 #include "lib/search.c"
 
 
+
+
+
+
 // Money Color \033[38;5;48m
 
 int space[] = {0, 15, 15, 15, 15, 15};
@@ -30,6 +34,7 @@ typedef List (*selectedArray)();
 typedef void (*selectedUserMenu)();
 
 /* ============================ */
+char *getTel(int pass_len);
 
 void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetail);
 int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail);
@@ -52,6 +57,8 @@ SearchData searchTel(char tel[10]);
 
 
 
+
+
 /* ============================ */
 
 /* 
@@ -65,14 +72,14 @@ UserNode *editUserData(UserNode *userDetail)
     printf("ID           %-5s %s \n", ":", userDetail->data.id);
     printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
     printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
-    printf("Tel          %-5s %d\n", ":", userDetail->data.tel);
+    printf("Tel          %-5s %s\n", ":", userDetail->data.tel);
     printf("\n");
     printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
 
     char nFname[250];
     char nLname[250];
-    char nTel[10];
-
+    char nTel[11];
+    
     strcpy(nFname, userDetail->data.fname);
     strcpy(nLname, userDetail->data.lname);
     strcpy(nTel, userDetail->data.tel);
@@ -90,17 +97,20 @@ UserNode *editUserData(UserNode *userDetail)
 
     printf("New Tel. : ");
     printf("\033[38;5;75m");
-    int lTel = getStringInput(nTel, sizeof(nTel));
+
+    strcpy(nTel,getTel(10));
+    int lTel = strlen(nTel);
     printf("\033[0m");
 
-    /*  printf("%d %d %d",lFname,lLname,lAge); */
+     printf("%d %d %d",lFname,lLname,lTel);
 
     if (lFname == 1)
         strcpy(nFname, userDetail->data.fname);
     if (lLname == 1)
         strcpy(nLname, userDetail->data.lname);
-    if (lTel == 1)
-        sprintf(nTel, "%d", userDetail->data.tel);
+    if (lTel < 10)
+        strcpy(nTel, userDetail->data.tel);
+
 
     printf("\n");
     printf("Check new data \n");
@@ -1095,8 +1105,6 @@ char *getTel(int pass_len)
     int i = 0;
 
 
-    printf("Enter your number \n");
-    printf("> ");
 
     while (i <= PASS_LEN)
     {
@@ -1387,6 +1395,9 @@ User Register(const char id[], const char fname[], const char lname[], int age)
     strncpy(newUser.lname, lname, sizeof(newUser.lname) - 1);
     newUser.lname[sizeof(newUser.lname) - 1] = '\0';
 
+    printf("Enter your number \n");
+    printf("> ");
+    
     strncpy(newUser.tel, getTel(10), sizeof(newUser.tel) - 1);
     newUser.tel[sizeof(newUser.tel) - 1] = '\0';
 
@@ -1515,7 +1526,7 @@ int main(int argc, char const *argv[])
 
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
     
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
+ /*    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21); */
     getch();
 
     userData = processCSVToLinkedList(USERS_DATA, 1);

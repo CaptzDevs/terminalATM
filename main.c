@@ -568,9 +568,15 @@ int main()
                     amount = getAmount();
                     printf("\n");
                     Transaction transfersData = transfers(USER_SEESION.User, accountID, amount);
-                    if(transfersData.result == 1) break;
+                    printf("%d",transfersData.result);
+                    if(transfersData.result == 1) {
+                        getch();
+                        break;
+                    }else{
+                        getch();
+                    }
 
-                    getch();
+
                }
                
                 break;
