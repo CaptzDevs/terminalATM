@@ -609,7 +609,7 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
                 }
 
                 printf("-------------------------------\n");
-                printf(">> %s",transactionData->data.time);
+                printf(">> %s",current->data.time);
                 if (current->data.type == 5)
                 {
                     printf("%-10s |", "Receive");
@@ -653,7 +653,7 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
 
     summary.balance = DR - WT;
 
-    summary.total = WT+DR;
+    summary.total = WT+summary.balance;
 
     printf("\n");
     printf("============== Summary ==============\n");
