@@ -22,8 +22,6 @@
 
 
 
-
-
 // Money Color \033[38;5;48m
 
 int space[] = {0, 15, 15, 15, 15, 15};
@@ -336,7 +334,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                             int listSize = getListSize(USER_LIST);
                             int arrSize;
                             USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
-                            free(userDetail);
+                       /*      free(userDetail); */
                             num = 0;
                             break;
                         }
@@ -1104,13 +1102,10 @@ char *getTel(int pass_len)
     char ch;
     int i = 0;
 
-
-
     while (i <= PASS_LEN)
     {
         ch = getch();
  
-
         if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
@@ -1126,7 +1121,6 @@ char *getTel(int pass_len)
             i++;
         }
     
-
         if(i == PASS_LEN && ch == ENTER_KEY){
             tel[i] = '\0';
             SearchData checkTel = searchTel(tel);
@@ -1144,7 +1138,8 @@ char *getTel(int pass_len)
                 printf("\033[0m");
 
                 printf("Try Again\n");
-                printf("> ");
+                printf("[66+] > ");
+
 
                 i  = 0;
             }
@@ -1154,8 +1149,6 @@ char *getTel(int pass_len)
     printf("\n");
     return tel;
 }
-
-
 
 
 
@@ -1396,9 +1389,10 @@ User Register(const char id[], const char fname[], const char lname[], int age)
     newUser.lname[sizeof(newUser.lname) - 1] = '\0';
 
     printf("Enter your number \n");
-    printf("> ");
+    printf("[66+] > ");
     
-    strncpy(newUser.tel, getTel(10), sizeof(newUser.tel) - 1);
+  
+    strncpy(newUser.tel,  getTel(10) , sizeof(newUser.tel) - 1);
     newUser.tel[sizeof(newUser.tel) - 1] = '\0';
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
@@ -1526,7 +1520,7 @@ int main(int argc, char const *argv[])
 
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
     
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
+/*     User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21); */
     getch();
 
     userData = processCSVToLinkedList(USERS_DATA, 1);

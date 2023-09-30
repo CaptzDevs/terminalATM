@@ -60,7 +60,7 @@ SearchData searchID(char id[14])
 
     qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByID);
 
-    SearchData result = binarySearchID(USER_ARR, USER_ARR_SIZE, atoi(id));
+    SearchData result = binarySearchID(USER_ARR, USER_ARR_SIZE, atol(id));
 
     showSearchResult(result , id, "ID. : ");
 
@@ -69,7 +69,7 @@ SearchData searchID(char id[14])
 
 SearchData searchAccount(char arrcountID[])
 {
-    SearchData result = binarySearchAccountID(USER_ARR, USER_ARR_SIZE, atoi(arrcountID));
+    SearchData result = binarySearchAccountID(USER_ARR, USER_ARR_SIZE, atol(arrcountID));
 
     //showSearchResult(result , arrcountID, "Account ID : ");
 
@@ -81,7 +81,7 @@ SearchData searchTel(char tel[10])
 {
     qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByTel);
 
-    SearchData result = binarySearchTel(USER_ARR, USER_ARR_SIZE, atoi(tel));
+    SearchData result = binarySearchTel(USER_ARR, USER_ARR_SIZE, atol(tel));
 
     showSearchResult(result , tel, "Tel. : ");
     return result;
@@ -98,14 +98,14 @@ SearchData binarySearchID(User arr[], int size, int target)
     while (left <= right)
     {
         int mid = left + (right - left) / 2;
-        if (atoi(arr[mid].id) == target)
+        if (atol(arr[mid].id) == target)
         {
             FoundUser.result = 1;
             FoundUser.user = &arr[mid];
 
             return FoundUser; // Found the target value
         }
-        else if (atoi(arr[mid].id) < target)
+        else if (atol(arr[mid].id) < target)
         {
             left = mid + 1; // Search the right half
         }
@@ -130,14 +130,15 @@ SearchData binarySearchTel(User arr[], int size, int target)
     while (left <= right)
     {
         int mid = left + (right - left) / 2;
-        if (atoi(arr[mid].tel) == target)
+        
+        if (atol(arr[mid].tel) == target)
         {
             FoundUser.result = 1;
             FoundUser.user = &arr[mid];
 
             return FoundUser; // Found the target value
         }
-        else if (atoi(arr[mid].tel) < target)
+        else if (atol(arr[mid].tel) < target)
         {
             left = mid + 1; // Search the right half
         }
@@ -163,14 +164,14 @@ SearchData binarySearchAccountID(User arr[], int size, int target)
     {
         int mid = left + (right - left) / 2;
 
-        if (atoi(arr[mid].accountID) == target)
+        if (atol(arr[mid].accountID) == target)
         {
             FoundUser.result = 1;
             FoundUser.user = &arr[mid];
 
             return FoundUser; // Found the target value
         }
-        else if (atoi(arr[mid].accountID) < target)
+        else if (atol(arr[mid].accountID) < target)
         {
             left = mid + 1; // Search the right half
         }

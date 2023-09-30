@@ -25,6 +25,7 @@
 #include "lib/file.c"
 #include "lib/search.c"
 
+
 #include "lib/transaction.c"
 
 /* ============== CONFIG ================ */
@@ -544,18 +545,22 @@ int main()
                 displayBalance();
                 displayMenuHeader("Deposit");
                 amount = getAmount();
-                deposit(USER_SEESION.User, amount);
-
-                getch();
+                if(amount > 0){
+                    deposit(USER_SEESION.User, amount);
+                    getch();
+                }
                 break;
             case 2:
                 system("cls");
                 displayBalance();
                 displayMenuHeader("Withdraw");
                 amount = getAmount();
-                withdraw(USER_SEESION.User, amount);
+                if(amount > 0){
 
+                withdraw(USER_SEESION.User, amount);
                 getch();
+                }
+
                 break;
             case 3:
                while (1)
@@ -564,18 +569,24 @@ int main()
                     displayBalance();
                     displayMenuHeader("Transfer");
                     char *accountID = getAccountID();
+                    if(strcmp(accountID, "0000000000") == 0) break;
+
                     printf("\n");
                     amount = getAmount();
                     printf("\n");
-                    Transaction transfersData = transfers(USER_SEESION.User, accountID, amount);
-                    printf("%d",transfersData.result);
-                    if(transfersData.result == 1) {
-                        getch();
-                        break;
-                    }else{
-                        getch();
-                    }
+                    if(amount > 0){
 
+                        Transaction transfersData = transfers(USER_SEESION.User, accountID, amount);
+                        printf("%d",transfersData.result);
+                        
+                        if(transfersData.result == 1) {
+                            getch();
+                            break;
+                        }else{
+                            getch();
+                        }
+
+                    }
 
                }
                

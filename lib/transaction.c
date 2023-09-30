@@ -108,11 +108,8 @@ Transaction check(User *userData)
 
 Transaction deposit(User *userData, double amount)
 {
-
     Transaction transactionDetail;
     TransactionType type = Deposit;
-
-
 
     printf("\n============ Deposit ============\n");
 
@@ -155,7 +152,6 @@ Transaction deposit(User *userData, double amount)
         saveTransaction(TRANSACTION_DATA, transactionDetail);
         showTransaction(transactionDetail);
     }
-
     return transactionDetail;
 }
 
@@ -682,8 +678,8 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
     int maxWT = 0;
     int maxDR = 0;
 
-    int thresholds[] = {1000000, 100000, 10000, 1000, 100};
-    int maxValues[] = {100000, 10000, 1000, 100, 10};
+    int thresholds[] = {1000000000,100000000,10000000,1000000, 100000, 10000, 1000, 100};
+    int maxValues[] = {100000000,10000000,1000000,100000, 10000, 1000, 100, 10};
 
     for (int i = 0; i < sizeof(thresholds) / sizeof(thresholds[0]); i++)
     {
@@ -755,9 +751,13 @@ double getAmount() {
     while (1) {
         ch = _getch(); // Use _getch to read a character without Enter
 
-        if (ch == '\r') {
+        if (ch == ENTER_KEY) {
             break; // Exit the loop when Enter is pressed
-        } else if (ch == '\b') { // Handle backspace
+        
+        }else if(ch == EXIST_KEY){
+             return 0;
+        }
+         else if (ch == BACKSPACE_KEY) { // Handle backspace
             if (i > 0) {
                 i--;
                 printf("\b \b"); // Erase the character
@@ -837,8 +837,12 @@ char* getAccountID(){
 
     while (1) {
         ch = getch(); 
-        if (ch == ENTER_KEY && i == 10) 
+        if (ch == ENTER_KEY && i == 10){
             break;
+        }else if(ch == EXIST_KEY){
+            accountID = "0000000000"; 
+            return accountID;
+        }
         else if (ch == BACKSPACE_KEY) {
             if (i > 0) {
                 i--;
