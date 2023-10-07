@@ -1122,6 +1122,7 @@ char *getTel(int pass_len)
         }
 
         if(ch == ENTER_KEY && i < PASS_LEN){
+            tel[0] = '\0';
             break;
         }
     

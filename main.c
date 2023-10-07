@@ -506,6 +506,7 @@ void displayBalance(){
         printf("------------------------\n");
     }
 }
+
 int main()
 {
 
@@ -539,7 +540,7 @@ int main()
         {
           
             choice = selectMenu(0, MAIN_MENU, displayMenu, "Main Menu"); // 0 - max menu's array size
-              
+            
             switch (choice)
             {
             case 1:
@@ -599,7 +600,6 @@ int main()
                 displayMenuHeader("Transactions List");
                 TableTransaction transactionData = processTransactionCSVToLinkedList(TRANSACTION_DATA, 1);
                 
-
                 if(transactionData.success == 1 || (transactionData.success == 1 && transactionData.numRows > 0) ){
                     // Define the date and time range
                     const char *startDateTime = "2023-01-01 00:00:00";
