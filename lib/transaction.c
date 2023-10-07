@@ -235,6 +235,28 @@ Transaction transfers(User *userData, char *destinationAccount, double amount)
     Transaction transactionDetail;
     TransactionType type = Transfers;
 
+
+    if(strcmp(userData->accountID , destinationAccount) == 0){
+
+        printf("\033[1;31mTransfers with same account! \n");
+        printf("Can't Transfers\033[0m");
+
+        printf("\n*=============================\n");
+
+        transactionDetail.result = 0;
+        transactionDetail.type = type;
+        transactionDetail.amount = amount;
+        transactionDetail.sourceUser = userData;
+        transactionDetail.destUser = userData;
+
+        strcpy(transactionDetail.time, getCurrentTime());
+        strcpy(transactionDetail.sourceAccount, userData->accountID);
+        strcpy(transactionDetail.destAccount, destinationAccount);
+
+        return transactionDetail;
+
+    }
+
     if (userData->balance < amount)
     {
 

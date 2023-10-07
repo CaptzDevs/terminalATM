@@ -1,11 +1,11 @@
-#include <stdio.h>
+/* #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../config.c"
+#include "../config.c" */
 
 
 char* progress_name[] = {
-    "Stage 1",
+    "Check Account",
     "Stage 2",
     "Stage 3"
     };
@@ -33,4 +33,11 @@ int progress(char* progressName[], int miles){
         i++;
     }
 }
+
+/* int main(int argc, char const *argv[])
+{
+    progress(progress_name,2);
+    return 0;
+}
+ */
 

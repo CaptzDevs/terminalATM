@@ -21,6 +21,8 @@
 #include "lib/key.c"
 #include "lib/array.c"
 #include "lib/sort.c"
+#include "lib/progress.c"
+
 
 #include "lib/file.c"
 #include "lib/search.c"
@@ -520,7 +522,7 @@ int main()
 
         printf("\n=======================\n");
 
-        preLoad2(2);
+        preLoad2(0);
 
         printf("\033[1;32m\r> SUCCESS !   ");
         printf("\033[0m"); // Reset text attributes to default
