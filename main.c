@@ -618,10 +618,13 @@ int main()
 
                 break;
             case 0:
-                system("cls");
+
+            choice = selectMenu(0, ACCOUNT_MENU, displayMenu, "Account Menu");
+     /*            system("cls");
                 printf("================ ENDED ================\n");
                 printf("Thank you!\n");
-                return 0;
+                return 0; */
+                break;
             default:
                 printf("\033[1;91mInvalid choice. Please choose a valid option (1/2/3/4).\n");
                 sleep(1);

@@ -1120,6 +1120,11 @@ char *getTel(int pass_len)
             printf("%c", tel[i]);
             i++;
         }
+
+        if(ch == ENTER_KEY && i < PASS_LEN){
+            break;
+        }
+    
     
         if(i == PASS_LEN && ch == ENTER_KEY){
             tel[i] = '\0';
