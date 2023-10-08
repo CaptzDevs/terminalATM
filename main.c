@@ -23,10 +23,8 @@
 #include "lib/sort.c"
 #include "lib/progress.c"
 
-
 #include "lib/file.c"
 #include "lib/search.c"
-
 
 #include "lib/transaction.c"
 
@@ -252,10 +250,11 @@ void displayLogo()
     printf("|      ATM CARD APP      |\n");
     printf("|        v1.0.0          |\n");
     printf("------------------------\n");
-    if(USER_SEESION.User){
+    if (USER_SEESION.User)
+    {
 
-    printf("Balance : \033[38;5;48m%.2lf\033[0m\n",USER_SEESION.User->balance);
-    printf("------------------------\n");
+        printf("Balance : \033[38;5;48m%.2lf\033[0m\n", USER_SEESION.User->balance);
+        printf("------------------------\n");
     }
 
     printf("\033[0m"); // Reset text attributes to default
@@ -318,12 +317,11 @@ void preLoad2(int sleepTime)
 
     while (1)
     {
-         char *userID = getID();
+        char *userID = getID();
 
         printf("\n%s", userID);
 
         Login loginData = login(userID);
-
 
         if (loginData.isLogin == 1)
         {
@@ -344,7 +342,7 @@ void preLoad2(int sleepTime)
             break;
         }
     }
-    
+
     printf("> Checking User          ");
     loadingCircle(sleepTime);
     printf("[/] \n");
@@ -499,11 +497,119 @@ int selectMenu(int min, char arr[][50], selectedMenu displayMenuCallback, char h
 /* =========================== */
 
 /* =========================== */
-void displayBalance(){
-    if(USER_SEESION.User){
+void displayBalance()
+{
+    if (USER_SEESION.User)
+    {
         printf("------------------------\n");
-        printf("Balance : \033[38;5;48m%.2lf\033[0m\n",USER_SEESION.User->balance);
+        printf("Balance : \033[38;5;48m%.2lf\033[0m\n", USER_SEESION.User->balance);
         printf("------------------------\n");
+    }
+}
+
+void displayMenuSwitch()
+{
+    int choice;
+    double amount = 0;
+
+    while (1)
+    {
+        choice = selectMenu(0, MAIN_MENU, displayMenu, "Main Menu"); // 0 - max menu's array size
+
+        switch (choice)
+        {
+        case 1:
+            system("cls");
+            displayBalance();
+            displayMenuHeader("Deposit");
+            amount = getAmount();
+            if (amount > 0)
+            {
+                deposit(USER_SEESION.User, amount);
+                getch();
+            }
+            break;
+        case 2:
+            system("cls");
+            displayBalance();
+            displayMenuHeader("Withdraw");
+            amount = getAmount();
+            if (amount > 0)
+            {
+
+                withdraw(USER_SEESION.User, amount);
+                getch();
+            }
+
+            break;
+        case 3:
+            while (1)
+            {
+                system("cls");
+                displayBalance();
+                displayMenuHeader("Transfer");
+                char *accountID = getAccountID();
+                if (strcmp(accountID, "0000000000") == 0)
+                    break;
+
+                printf("\n");
+                amount = getAmount();
+                printf("\n");
+                if (amount > 0)
+                {
+
+                    Transaction transfersData = transfers(USER_SEESION.User, accountID, amount);
+                    printf("%d", transfersData.result);
+
+                    if (transfersData.result == 1)
+                    {
+                        getch();
+                        break;
+                    }
+                    else
+                    {
+                        getch();
+                    }
+                }
+            }
+
+            break;
+        case 4:
+            system("cls");
+            displayBalance();
+            displayMenuHeader("Transactions List");
+            TableTransaction transactionData = processTransactionCSVToLinkedList(TRANSACTION_DATA, 1);
+
+            if (transactionData.success == 1 || (transactionData.success == 1 && transactionData.numRows > 0))
+            {
+                // Define the date and time range
+                const char *startDateTime = "2023-01-01 00:00:00";
+                const char *endDateTime = "2030-12-31 23:59:59";
+
+                // Call the function to select transactions within the date and time range
+                Summary summary = selectTransactionsByDateTimeRange(
+                    transactionData.list,
+                    transactionData.numRows,
+                    startDateTime,
+                    endDateTime, 0);
+
+                getch();
+            }
+            else
+            {
+
+                getch();
+            }
+            break;
+        case 0:
+       
+            return;
+            break;
+        default:
+            printf("\033[1;91mInvalid choice. Please choose a valid option (1/2/3/4).\n");
+            sleep(1);
+            system("cls");
+        }
     }
 }
 
@@ -533,104 +639,22 @@ int main()
         // system("cls");
         // printf("\e[?25h"); // show cursor
 
-        double amount  = 0;
-        int choice = selectMenu(0, ACCOUNT_MENU, displayMenu, "Account Menu"); // 0 - max menu's array size
-
+        int choiceAccout; // 0 - max menu's array size
         while (1)
         {
-          
-            choice = selectMenu(0, MAIN_MENU, displayMenu, "Main Menu"); // 0 - max menu's array size
-            
-            switch (choice)
+            choiceAccout = selectMenu(0, ACCOUNT_MENU, displayMenu, "Account Menu"); // 0 - max menu's array size
+            switch (choiceAccout)
             {
             case 1:
-                system("cls");
-                displayBalance();
-                displayMenuHeader("Deposit");
-                amount = getAmount();
-                if(amount > 0){
-                    deposit(USER_SEESION.User, amount);
-                    getch();
-                }
-                break;
-            case 2:
-                system("cls");
-                displayBalance();
-                displayMenuHeader("Withdraw");
-                amount = getAmount();
-                if(amount > 0){
-
-                withdraw(USER_SEESION.User, amount);
-                getch();
-                }
-
-                break;
-            case 3:
-               while (1)
-               {
-                    system("cls");
-                    displayBalance();
-                    displayMenuHeader("Transfer");
-                    char *accountID = getAccountID();
-                    if(strcmp(accountID, "0000000000") == 0) break;
-
-                    printf("\n");
-                    amount = getAmount();
-                    printf("\n");
-                    if(amount > 0){
-
-                        Transaction transfersData = transfers(USER_SEESION.User, accountID, amount);
-                        printf("%d",transfersData.result);
-                        
-                        if(transfersData.result == 1) {
-                            getch();
-                            break;
-                        }else{
-                            getch();
-                        }
-
-                    }
-
-               }
-               
-                break;
-            case 4:
-                system("cls");
-                displayBalance();
-                displayMenuHeader("Transactions List");
-                TableTransaction transactionData = processTransactionCSVToLinkedList(TRANSACTION_DATA, 1);
-                
-                if(transactionData.success == 1 || (transactionData.success == 1 && transactionData.numRows > 0) ){
-                    // Define the date and time range
-                    const char *startDateTime = "2023-01-01 00:00:00";
-                    const char *endDateTime = "2030-12-31 23:59:59";
-
-                    // Call the function to select transactions within the date and time range
-                    Summary summary = selectTransactionsByDateTimeRange(
-                        transactionData.list,
-                        transactionData.numRows, 
-                        startDateTime, 
-                        endDateTime, 0);
-
-                    getch();
-                }else{
-
-                    getch();
-                }
-
+                displayMenuSwitch();
                 break;
             case 0:
-
-            choice = selectMenu(0, ACCOUNT_MENU, displayMenu, "Account Menu");
-     /*            system("cls");
                 printf("================ ENDED ================\n");
                 printf("Thank you!\n");
-                return 0; */
+                return 0;
                 break;
             default:
-                printf("\033[1;91mInvalid choice. Please choose a valid option (1/2/3/4).\n");
-                sleep(1);
-                system("cls");
+                break;
             }
         }
     }
