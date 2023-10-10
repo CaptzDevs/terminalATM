@@ -8,7 +8,7 @@
 #define _SHOW_LIST_LINE true
 #define _CREAR_LIST true
 
-#define _APP_START_CLEAR true
+#define _APP_START_CLEAR false
 
 #define _SEARCH_RESULT false
 

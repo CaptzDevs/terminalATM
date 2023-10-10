@@ -8,128 +8,23 @@
 #include <math.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-
 #include "config.c"
-#include "module/array.c"
 
-#define MAX_LINE_SIZE 1024
-#define MAX_FIELDS 15
-#define MAX_ROW 30000
+#include "model/User.c"
 
-// Key
-#define EXIST_KEY 27
-#define ENTER_KEY 13
-#define DELETE_KEY 83
-#define BACKSPACE 8
+#include "lib/key.c"
+#include "lib/array.c"
+#include "lib/sort.c"
 
-// Arrow Key Code
-#define UP_KEY 72
-#define DOWN_KEY 80
-#define LEFT_KEY 75
-#define RIGHT_KEY 77
+#include "lib/file.c"
+#include "lib/search.c"
 
-#define MAX_LIST_ROW 10
 
-#define MAX_ACCCOUNT_ID_SIZE 11
+
 
 // Money Color \033[38;5;48m
 
-#define USERS_DATA "./Data/Users.csv"
-#define ACCOUNTS_DATA "./Data/Accounts.csv"
-
-char *USER_MENU[] = {
-    "EDIT",
-    "DELETE",
-    "ACTIVE && SUSPEND CARD",
-    "ENABLE && DISABLE CARD"};
-
-const char *FIELD_NAME[] = {
-    "ID",
-    "AccountID",
-    "First Name",
-    "Last Name",
-    "Tel",
-    "Balance",
-    "Active",
-    "Status",
-    "Register Time",
-    "Password"};
-
-const char *FIELD_TYPE[] = {
-    "%s",
-    "%s",
-    "%s",
-    "%s",
-    "%s",
-    "%.2lf",
-    "%d",
-    "%d",
-    "%s",
-    "%s"};
-
-const int FIELD_NAME_SIZE = sizeof(FIELD_NAME) / sizeof(FIELD_NAME[0]);
-const int FIELD_TYPE_SIZE = sizeof(FIELD_TYPE) / sizeof(FIELD_TYPE[0]);
-const int USER_MENU_SIZE = sizeof(USER_MENU) / sizeof(USER_MENU[0]);
-
 int space[] = {0, 15, 15, 15, 15, 15};
-
-typedef struct User
-{
-    int _id; // for index
-    char id[15];
-    char accountID[15];
-    char fname[250];
-    char lname[250];
-    char tel[11];
-    double balance;
-    int active;
-    int status;
-    char registerTime[50];
-    char password[7];
-
-} User;
-
-typedef struct UserNode
-{
-    User data;
-    struct UserNode *next;
-
-} UserNode;
-
-typedef struct Table
-{
-    int numRows;
-    int numCols;
-    int arraySize;
-    UserNode *list;
-    User *array;
-
-} Table;
-
-typedef struct List
-{
-    int numRows;
-    int numCols;
-
-    int currentRow;
-    int currentID;
-    struct List *list;
-
-    UserNode *userData;
-    User *array;
-
-} List;
-
-typedef struct SearchData
-{
-    int result;
-    User *user;
-} SearchData;
-
-UserNode *USER_LIST = NULL;
-User *USER_ARR = NULL;
-
-int USER_ARR_SIZE = 0;
 
 typedef Table (*selectedTable)();
 typedef List (*selectedList)();
@@ -137,34 +32,37 @@ typedef List (*selectedArray)();
 typedef void (*selectedUserMenu)();
 
 /* ============================ */
-void saveUser(const char *filename, const User *userData);
-void appendToCSV(const char *filename, const User *userData);
+char *getTel(int pass_len);
+
+void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetail);
+int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail);
+
 char *createPassword();
+
 int sortByTel(const void* a, const void* b);
+int getStringInput(char *input, int maxSize);
+int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
+int selectUserList(int min, int max, selectedList tableCallBack);
+
+
+List displayUserList(int choice, int page);
+List displayUserArray(User *userArray, int arraySize, int choice, int page);
+
+
+UserNode *deleteUser(int id);
+UserNode *editUserData(UserNode *userDetail);
 SearchData searchTel(char tel[10]);
 
 
-void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result);
-void saveLinkedListToCSV(const char *filename, UserNode *head);
-int getListSize(UserNode *list);
-int checkFileChange(const char *filename, float interval);
-int checkFileChangeOnce(const char *filename);
 
-int isfileExists(const char *filename);
-int getStringInput(char *input, int maxSize);
-int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
-List displayUserArray(User *userArray, int arraySize, int choice, int page);
-User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
-UserNode *deleteUser(int id);
-Table processCSVToLinkedList(const char *filename, int choice);
 
-time_t lastestTime;
 
 /* ============================ */
 
-/* 2 Type of menu function
-    1. Controller Function      [C]
-    2. Display Function         [D]
+/* 
+    //* 2 Type of menu function
+   //* 1. Controller Function      [C]
+   //* 2. Display Function         [D]
 */
 
 UserNode *editUserData(UserNode *userDetail)
@@ -172,14 +70,14 @@ UserNode *editUserData(UserNode *userDetail)
     printf("ID           %-5s %s \n", ":", userDetail->data.id);
     printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
     printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
-    printf("Tel          %-5s %d\n", ":", userDetail->data.tel);
+    printf("Tel          %-5s %s\n", ":", userDetail->data.tel);
     printf("\n");
     printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
 
     char nFname[250];
     char nLname[250];
-    char nTel[10];
-
+    char nTel[11];
+    
     strcpy(nFname, userDetail->data.fname);
     strcpy(nLname, userDetail->data.lname);
     strcpy(nTel, userDetail->data.tel);
@@ -197,17 +95,20 @@ UserNode *editUserData(UserNode *userDetail)
 
     printf("New Tel. : ");
     printf("\033[38;5;75m");
-    int lTel = getStringInput(nTel, sizeof(nTel));
+
+    strcpy(nTel,getTel(10));
+    int lTel = strlen(nTel);
     printf("\033[0m");
 
-    /*  printf("%d %d %d",lFname,lLname,lAge); */
+     printf("%d %d %d",lFname,lLname,lTel);
 
     if (lFname == 1)
         strcpy(nFname, userDetail->data.fname);
     if (lLname == 1)
         strcpy(nLname, userDetail->data.lname);
-    if (lTel == 1)
-        sprintf(nTel, "%d", userDetail->data.tel);
+    if (lTel < 10)
+        strcpy(nTel, userDetail->data.tel);
+
 
     printf("\n");
     printf("Check new data \n");
@@ -433,7 +334,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                             int listSize = getListSize(USER_LIST);
                             int arrSize;
                             USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
-                            free(userDetail);
+                       /*      free(userDetail); */
                             num = 0;
                             break;
                         }
@@ -1144,6 +1045,8 @@ int selectUserList(int min, int max, selectedList tableCallBack)
             if (ch == EXIST_KEY)
             { // Check for Escape key (optional)
                 printf("Escape key pressed\n");
+                printf("EXIT\n");
+
 
                 break;
             }
@@ -1169,7 +1072,7 @@ char *getPassword(int pass_len)
     while (i < PASS_LEN)
     {
         ch = getch();
-        if (ch == BACKSPACE)
+        if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
             {
@@ -1199,16 +1102,11 @@ char *getTel(int pass_len)
     char ch;
     int i = 0;
 
-
-    printf("Enter your number \n");
-    printf("> ");
-
     while (i <= PASS_LEN)
     {
         ch = getch();
  
-
-        if (ch == BACKSPACE)
+        if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
             {
@@ -1222,12 +1120,18 @@ char *getTel(int pass_len)
             printf("%c", tel[i]);
             i++;
         }
-    
 
+        if(ch == ENTER_KEY && i < PASS_LEN){
+            tel[0] = '\0';
+            break;
+        }
+    
+    
         if(i == PASS_LEN && ch == ENTER_KEY){
             tel[i] = '\0';
             SearchData checkTel = searchTel(tel);
             printf("\n");
+
             if(checkTel.result == 0){
                 printf("\033[1;32m");
                 printf("You can use this number [/]");
@@ -1240,104 +1144,20 @@ char *getTel(int pass_len)
                 printf("\033[0m");
 
                 printf("Try Again\n");
-                getTel(10);
+                printf("[66+] > ");
+
+
+                i  = 0;
             }
         }
-
     }
 
     printf("\n");
     return tel;
 }
 
-User *linkedListToArray(UserNode *head, int linkSize, int *arraySize)
-{
-    // First, count the number of nodes
-    int count = linkSize;
-    UserNode *current = head;
 
-    // Allocate memory for the array of User structures
-    User *userArray = (User *)malloc(count * sizeof(User));
-    if (userArray == NULL)
-    {
-        perror("Memory allocation failed");
-        exit(EXIT_FAILURE);
-    }
-    // Copy the data from nodes into the array
-    current = head;
-    for (int i = 0; i < count; i++)
-    {
-        userArray[i] = current->data;
-        current = current->next;
-    }
 
-    *arraySize = count;
-    return userArray;
-}
-
-void saveLinkedListToCSV(const char *filename, UserNode *head)
-{
-    FILE *file = fopen(filename, "w");
-    if (file == NULL)
-    {
-        perror("Error opening file");
-        return;
-    }
-
-    char headerFile[100];
-    char dataType[100];
-
-    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
-    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
-
-    // Write the header line
-    fprintf(file, strcat(headerFile, "\n"));
-
-    UserNode *current = head;
-    while (current != NULL)
-    {
-        User user = current->data;
-
-        fprintf(file, dataType,
-                user.id,
-                user.accountID,
-                user.fname,
-                user.lname,
-                user.tel,
-                user.balance,
-                user.active,
-                user.status,
-                user.registerTime,
-                user.password
-
-        );
-
-        fprintf(file, "\n");
-
-        current = current->next;
-    }
-
-    fclose(file);
-}
-
-int getListSize(UserNode *list)
-{
-    UserNode *current = list;
-    int count = 0;
-    if (current == NULL)
-    {
-        return 0;
-    }
-    else
-    {
-        while (current)
-        {
-            count++;
-            current = current->next;
-        }
-        return count;
-    }
-}
 
 User searchUser(User *userArray, int id)
 {
@@ -1453,28 +1273,6 @@ UserNode *deleteUser(int id)
     return USER_LIST; // Return the head of the modified list
 }
 
-char *getCurrentTime()
-{
-    time_t current_time;
-    struct tm *time_info;
-    char *time_string = (char *)malloc(50 * sizeof(char)); // Allocate memory for the string
-
-    if (time_string == NULL)
-    {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
-        // Exit the program if memory allocation fails
-    }
-    // Get the current time
-    time(&current_time);
-
-    // Convert the current time to a struct tm
-    time_info = localtime(&current_time);
-
-    // Format the time as a string
-    strftime(time_string, 50, "%Y-%m-%d %H:%M:%S", time_info);
-    return time_string; // Return the dynamically allocated string
-}
 
 int getRowsByColumn(int index)
 {
@@ -1596,7 +1394,11 @@ User Register(const char id[], const char fname[], const char lname[], int age)
     strncpy(newUser.lname, lname, sizeof(newUser.lname) - 1);
     newUser.lname[sizeof(newUser.lname) - 1] = '\0';
 
-    strncpy(newUser.tel, getTel(10), sizeof(newUser.tel) - 1);
+    printf("Enter your number \n");
+    printf("[66+] > ");
+    
+  
+    strncpy(newUser.tel,  getTel(10) , sizeof(newUser.tel) - 1);
     newUser.tel[sizeof(newUser.tel) - 1] = '\0';
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
@@ -1636,317 +1438,6 @@ User Register(const char id[], const char fname[], const char lname[], int age)
 }
 
 /* FILES Utilities Function */
-int isFileChanged(const char *filename, time_t *lastModifiedTime)
-{
-    struct stat fileStat;
-
-    // Get the file's status (including modification time)
-    if (stat(filename, &fileStat) != 0)
-    {
-        perror("Error getting file status");
-        return -1; // Error
-    }
-
-    // Check if the modification time has changed
-    if (fileStat.st_mtime != *lastModifiedTime)
-    {
-        *lastModifiedTime = fileStat.st_mtime; // Update last modified time
-        return 1;                              // File has changed
-    }
-
-    return 0; // File has not changed
-}
-
-int checkFileChange(const char *filename, float interval)
-{
-    time_t lastModifiedTime = 0;
-    int i = 0;
-    while (1)
-    {
-        int result = isFileChanged(filename, &lastModifiedTime);
-
-        if (result == -1)
-        {
-            return 1; // Error occurred
-        }
-        else if (result == 1 && i != 0)
-        {
-            printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
-            printf("Restarting...");
-            /* system("restart.exe"); */
-            exit(1);
-            return 1;
-        }
-        else
-        {
-            printf("File has not changed.\n");
-        }
-
-        // Sleep for a while before checking again (adjust as needed)
-        sleep(interval);
-        i = 1;
-    }
-}
-
-int checkFileChangeOnce(const char *filename)
-{
-
-    time_t lastModifiedTime = 0;
-    int result = isFileChanged(filename, &lastModifiedTime);
-
-    // Print the current time in a human-readable format
-    printf("Program started at: %s", ctime(&lastestTime));
-    printf("File has changed. Last modified time: %s", ctime(&lastModifiedTime));
-    if (lastModifiedTime >= lastestTime)
-    {
-        printf("Loading New Data");
-        struct tm *localTime;
-        time(&lastestTime);
-        localTime = localtime(&lastestTime);
-
-        USER_LIST = NULL;
-        Table userData = processCSVToLinkedList(USERS_DATA, 1);
-        USER_LIST = userData.list;
-    }
-    else
-    {
-        printf("Not Change");
-    }
-    return 1;
-}
-
-int isfileExists(const char *filename)
-{
-    return access(filename, F_OK) != -1;
-}
-
-void saveUser(const char *filename, const User *userData)
-{
-    FILE *file = fopen(filename, "w");
-    if (file == NULL)
-    {
-        perror("Unable to open file");
-        exit(1);
-    }
-
-    char headerFile[100];
-    char dataType[100];
-
-    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
-    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
-
-    // Write the header row
-    fprintf(file, strcat(headerFile, "\n"));
-
-    // Write User data
-    fprintf(file, dataType,
-            userData->id,
-            userData->accountID,
-            userData->fname,
-            userData->lname,
-            userData->tel,
-            userData->balance,
-            userData->active,
-            userData->status,
-            userData->registerTime,
-            userData->password);
-
-    // Close the file
-    fclose(file);
-}
-
-void appendToCSV(const char *filename, const User *userData)
-{
-    FILE *file = fopen(filename, "a"); // Open in append mode
-    if (file == NULL)
-    {
-        perror("Unable to open file");
-        exit(1);
-    }
-
-    char headerFile[100];
-    char dataType[100];
-
-    concatenateWithCommas(FIELD_NAME, FIELD_NAME_SIZE, headerFile);
-    concatenateWithCommas(FIELD_TYPE, FIELD_TYPE_SIZE, dataType);
-
-    // Write the header row
-    /*     fprintf(file, strcat(headerFile, "\n")); */
-
-    // Write User data
-    fprintf(file, dataType,
-            userData->id,
-            userData->accountID,
-            userData->fname,
-            userData->lname,
-            userData->tel,
-            userData->balance,
-            userData->active,
-            userData->status,
-            userData->registerTime,
-            userData->password);
-    fprintf(file, "\n");
-
-    // Close the file
-    fclose(file);
-}
-
-void copyTo(char *dest, const char *src, size_t destSize)
-{
-    strncpy(dest, src, destSize - 1);
-    dest[destSize - 1] = '\0';
-}
-
-Table processCSVToLinkedList(const char *filename, int choice)
-{
-    FILE *file = fopen(filename, "r");
-    Table csvDataTable;
-    User userData, *userArray;
-    UserNode *current = NULL;
-    UserNode *userHead = NULL;
-
-    if (!file)
-    {
-        perror("Error opening file");
-        return csvDataTable;
-    }
-
-    char line[MAX_LINE_SIZE];
-    char *fieldNames[MAX_FIELDS]; // Array to store field names
-    int fieldCount = 1;
-    int currentRow = 1; // Initialize the row number
-
-    // Read the first line to get field names
-    if (fgets(line, sizeof(line), file))
-    {
-        char *token = strtok(line, ",");
-        fieldNames[0] = strdup("#");
-        while (token && fieldCount < MAX_FIELDS)
-        {
-            // Store the field name in the array
-            fieldNames[fieldCount] = strdup(token);
-
-            // Remove trailing newline character, if present
-            size_t len = strlen(fieldNames[fieldCount]);
-            if (fieldNames[fieldCount][len - 1] == '\n')
-            {
-                fieldNames[fieldCount][len - 1] = '\0';
-            }
-
-            // Get the next token
-            token = strtok(NULL, ",");
-            fieldCount++;
-        }
-    }
-
-    // Process the data lines
-    while (fgets(line, sizeof(line), file) && currentRow <= MAX_ROW)
-    {
-        char *token = strtok(line, ",");
-        int currentField = 0;
-
-        while (token && currentField < fieldCount)
-        {
-
-            if (strcmp(fieldNames[0], "#") == 0)
-                userData._id = currentRow;
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[0]) == 0)
-                copyTo(userData.id, token, sizeof(userData.id));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[1]) == 0)
-                copyTo(userData.accountID, token, sizeof(userData.accountID));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[2]) == 0)
-                copyTo(userData.fname, token, sizeof(userData.fname));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[3]) == 0)
-                copyTo(userData.lname, token, sizeof(userData.lname));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[4]) == 0)
-                copyTo(userData.tel, token, sizeof(userData.tel));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[5]) == 0)
-                userData.balance = strtod(token, NULL);
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[6]) == 0)
-                userData.active = atoi(token);
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[7]) == 0)
-                userData.status = atoi(token);
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[8]) == 0)
-                copyTo(userData.registerTime, token, sizeof(userData.registerTime));
-
-            if (strcmp(fieldNames[currentField + 1], FIELD_NAME[9]) == 0)
-                copyTo(userData.password, token, sizeof(userData.password));
-
-            // Remove trailing newline character from the token, if present
-            size_t len = strlen(token);
-
-            if (token[len - 1] == '\n')
-            {
-                token[len - 1] = '\0';
-            }
-
-            // Get the next token
-            token = strtok(NULL, ",");
-            currentField++;
-        }
-
-        /* printf("\n"); */
-
-        UserNode *newUserNode = NULL;
-        newUserNode = malloc(sizeof(struct UserNode));
-        newUserNode->data = userData;
-        newUserNode->next = NULL;
-
-        current = userHead;
-
-        if (userHead == NULL)
-        {
-            userHead = newUserNode;
-        }
-        else
-        {
-            while (current)
-            {
-                if (!current->next)
-                {
-                    current->next = newUserNode;
-
-                    break;
-                }
-                current = current->next;
-            }
-        }
-
-        currentRow++; // Increment the row number
-    }
-
-    // Free memory for field names
-    for (int i = 0; i < fieldCount; i++)
-    {
-        free(fieldNames[i]);
-    }
-
-    fclose(file);
-
-    int arraySize;
-    userArray = linkedListToArray(userHead, currentRow - 1, &arraySize);
-
-    csvDataTable.numRows = currentRow - 1;
-    csvDataTable.numCols = fieldCount;
-    csvDataTable.list = userHead;
-    csvDataTable.array = userArray;
-    csvDataTable.arraySize = arraySize;
-
-    USER_ARR = userArray;
-    USER_ARR_SIZE = arraySize;
-
-    printf("\n Process User Table [/]\n");
-    return csvDataTable;
-}
 
 void generateRandomUserData(User *u)
 {
@@ -1983,151 +1474,12 @@ void generateRandomUserData(User *u)
     /*   u->age = 18 + rand() % 43; */
 }
 
-SearchData binarySearchTel(User arr[], int size, int target)
-{   
-    int left = 0;
-    int right = size - 1;
-    SearchData FoundUser;
 
-    while (left <= right)
-    {
-        int mid = left + (right - left) / 2;
-        if (atoi(arr[mid].tel) == target)
-        {
-            FoundUser.result = 1;
-            FoundUser.user = &arr[mid];
 
-            return FoundUser; // Found the target value
-        }
-        else if (atoi(arr[mid].tel) < target)
-        {
-            left = mid + 1; // Search the right half
-        }
-        else
-        {
-            right = mid - 1; // Search the left half
-        }
-    }
 
-    FoundUser.result = 0;
-    FoundUser.user = NULL;
 
-    return FoundUser;
-}
 
-SearchData binarySearchAccountID(User arr[], int size, int target)
-{
-    int left = 0;
-    int right = size - 1;
-    SearchData FoundUser;
 
-    while (left <= right)
-    {
-        int mid = left + (right - left) / 2;
-
-        if (atoi(arr[mid].accountID) == target)
-        {
-            FoundUser.result = 1;
-            FoundUser.user = &arr[mid];
-
-            return FoundUser; // Found the target value
-        }
-        else if (atoi(arr[mid].accountID) < target)
-        {
-            left = mid + 1; // Search the right half
-        }
-        else
-        {
-            right = mid - 1; // Search the left half
-        }
-    }
-
-    FoundUser.result = 0;
-    FoundUser.user = NULL;
-
-    return FoundUser;
-}
-
-SearchData searchTel(char tel[10])
-{
-
-    qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByTel);
-
-    SearchData result = binarySearchTel(USER_ARR, USER_ARR_SIZE, atoi(tel));
-
-    if(_SEARCH_RESULT){
-        if (result.result)
-        {
-            printf("\n============== Search Result ==============\n");
-
-            printf(" #              : %d \n", result.user->_id);
-            printf(" ID             : %s \n", result.user->id);
-            printf(" fname          : %s \n", result.user->fname);
-            printf(" lname          : %s \n", result.user->lname);
-            printf(" tel            : %s \n", result.user->tel);
-            printf(" accountID      : %s \n", result.user->accountID);
-            printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", result.user->balance);
-            printf("\n============== Card Status =============\n");
-            printf(" active         : %s \n", result.user->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
-            printf(" status         : %s \n", result.user->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
-            printf(" registerDate   : %s \n", result.user->registerTime);
-            printf("==============================================\n");
-        }
-        else
-        {
-            printf("\n============== Search Result ==============\n");
-            printf("Tel.  \033[38;5;75m %s  \033[0m Is Not Found\n", tel);
-            printf("==============================================\n");
-        }
-    }
-        return result;
-
-}
-
-void searchAccount(char arrcountID[])
-{
-
-    SearchData result = binarySearchAccountID(USER_ARR, USER_ARR_SIZE, atoi(arrcountID));
-
-    if (result.result)
-    {
-        printf("\n============== Seearch Result ==============\n");
-
-        printf(" #              : %d \n", result.user->_id);
-        printf(" ID             : %s \n", result.user->id);
-        printf(" fname          : %s \n", result.user->fname);
-        printf(" lname          : %s \n", result.user->lname);
-        printf(" tel            : %s \n", result.user->tel);
-        printf(" accountID      : %s \n", result.user->accountID);
-        printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", result.user->balance);
-        printf("\n============== Card Status =============\n");
-        printf(" active         : %s \n", result.user->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
-        printf(" status         : %s \n", result.user->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
-        printf(" registerDate   : %s \n", result.user->registerTime);
-        printf("==============================================\n");
-    }
-    else
-    {
-        printf("\n============== Seearch Result ==============\n");
-        printf("ID  \033[38;5;75m %s  \033[0m Is Not Found\n", arrcountID);
-        printf("==============================================\n");
-    }
-}
-
-void concatenateWithCommas(const char *fieldNames[], int fieldSize, char *result)
-{
-    // Initialize the result string
-    strcpy(result, "");
-
-    for (int i = 0; i < fieldSize; i++)
-    {
-        strcat(result, fieldNames[i]);
-        if (i < fieldSize - 1)
-        {
-            strcat(result, ",");
-        }
-    }
-}
 
 char *createPassword()
 {
@@ -2155,9 +1507,6 @@ char *createPassword()
 }
 
 
-int sortByTel(const void* a, const void* b) {
-    return strcmp(((User*)a)->tel, ((User*)b)->tel);
-}
 
 
 int main(int argc, char const *argv[])
@@ -2170,43 +1519,19 @@ int main(int argc, char const *argv[])
     }
 
     struct tm *localTime;
-    // Get the current time
     time(&lastestTime);
     localTime = localtime(&lastestTime);
 
     printf("Program started at: %s", asctime(localTime));
 
-    User *UserArray;
-    UserNode *UserList;
-
-
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
-    UserList = userData.list;
-    UserArray = userData.array;
-
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21);
+    
+/*     User registeredUser = Register("1909300007092", "Captain", "Siwakron", 21); */
     getch();
 
-    // Init User List
     userData = processCSVToLinkedList(USERS_DATA, 1);
-    UserList = userData.list;
-    UserArray = userData.array;
+    selectUserList(1, USER_ARR_SIZE, displayUserList);
 
-    printf("Users Numbers : %d \n", userData.arraySize);
-
-    int i = 0;
-    while (i != userData.arraySize)
-    {
-        printf("> %s \n", UserArray[i].tel);
-        i++;
-    }
-
-    getch();
-
-    USER_LIST = userData.list;
-
-    selectUserList(1, userData.numRows, displayUserList);
-    /*  remove(USERS_DATA); */
     getch();
     return 0;
 }

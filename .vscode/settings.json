@@ -12,7 +12,10 @@
         "stdlib.h": "c",
         "string.h": "c",
         "time.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "stat.h": "c",
+        "file.h": "c",
+        "*.gitignore": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
