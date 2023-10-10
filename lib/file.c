@@ -19,6 +19,9 @@
 #define USERS_DATA "./data/Users.csv"
 #define ACCOUNTS_DATA "./data/Accounts.csv"
 
+#define CARD_DATA "./card/SIAM-ID/data.text"
+
+
 //*---------------------------------
 #define MAX_LINE_SIZE 1024
 #define MAX_FIELDS 15

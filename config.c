@@ -10,7 +10,7 @@
 
 #define _APP_START_CLEAR false
 
-#define _SEARCH_RESULT true
+#define _SEARCH_RESULT false
 
 
 

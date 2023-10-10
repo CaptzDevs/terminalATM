@@ -57,7 +57,6 @@ void showSearchResult(SearchData result , char* prop ,char* propName ){
 
 SearchData searchID(char id[14])
 {
-
     qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByID);
 
     SearchData result = binarySearchID(USER_ARR, USER_ARR_SIZE, atol(id));

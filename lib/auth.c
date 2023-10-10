@@ -152,4 +152,36 @@ Login login(char userID[14]){
 }
 
 
+Login loginCard(User* cardData){
+
+    SearchData userData;
+    int isValidPassword;
+
+    printf("Login \n");
+    printf("=========================\n");
+        char accID[14];
+
+        strcpy(accID,cardData->accountID);
+         isValidPassword = checkPassword(cardData->password);
+         
+         if(isValidPassword){
+
+            USER_SEESION.isLogin = 1;
+            strcpy(USER_SEESION.loginTime, getCurrentTime());
+
+            USER_SEESION.User = cardData;
+
+            USER_SEESION = USER_SEESION;
+
+            return USER_SEESION;
+         }else{
+            USER_SEESION.isLogin = 0;
+            strcpy(USER_SEESION.loginTime, '\0');
+
+            return USER_SEESION;
+         }
+
+   
+}
+
 

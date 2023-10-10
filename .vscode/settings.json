@@ -14,7 +14,8 @@
         "time.h": "c",
         "math.h": "c",
         "stat.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "*.gitignore": "c"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
