@@ -23,11 +23,17 @@
 #include "lib/sort.c"
 #include "lib/progress.c"
 
+
 #include "lib/file.c"
 #include "lib/search.c"
 
+#include "lib/auth.c" 
+#include "lib/account.c"
+
 #include "lib/card.c"
 #include "lib/transaction.c"
+
+
 
 
 /* ============== CONFIG ================ */
@@ -62,6 +68,13 @@ char ACCOUNT_MENU[_MENU_SIZE][50] = {
     "My Account",
     "Account Setting",
 };
+
+
+char START_MENU[_MENU_SIZE][50] = {
+    "Login",
+    "Login Without Card",
+};
+
 
 typedef Card (*OperationCard)();
 typedef int (*Operation)();
@@ -216,8 +229,8 @@ Card asyncLoadingCard(int timeoutArg, OperationCard checkFn)
         fflush(stdout);                // Flush the output buffer to ensure immediate printing
         nanosleep(&delay, NULL);
         i++;
-        isClearTimeout = checkFn();
 
+        isClearTimeout = checkFn();
     }
     
     
@@ -226,8 +239,6 @@ Card asyncLoadingCard(int timeoutArg, OperationCard checkFn)
         return isClearTimeout;
     }
 
-
-    
 
     return isClearTimeout;
 }
@@ -255,16 +266,18 @@ Card insertCard()
 
     if (isInsertCard.status == 1)
     {
-        renderString("\rCARD IS INSERTED        [/]", 1);
+        renderString("\rCARD IS INSERTED         [/]", 1);
 
         return isInsertCard;
     }
-    else
+    else if (isInsertCard.status == 2)
     {
+        renderString("\rNEW USER         [/]", 1);
         return isInsertCard;
 
     }
 }
+
 
 void renderString(char str[], int duration)
 {
@@ -352,7 +365,7 @@ void moveUp()
     printf(">");
 }
 
-void preLoad2(int sleepTime,int status ,User *userData)
+void preLoad2(int sleepTime,int choice ,int status ,User *userData)
 {
     printf("> Initial                ");
     loadingCircle(sleepTime);
@@ -361,8 +374,13 @@ void preLoad2(int sleepTime,int status ,User *userData)
     printf("> Checking User          ");
     loadingCircle(sleepTime);
     printf("[/] \n");
+
     
-    if(status == 1){
+ 
+    if(choice != 0 && status == 2){
+        Register(userData->id, userData->fname,userData->lname);
+    }
+    if(choice == 1 && status == 1){
  
         Login loginData = loginCard(userData);
 
@@ -371,12 +389,10 @@ void preLoad2(int sleepTime,int status ,User *userData)
                 printf("Logged : %s", loginData.loginTime);
 
                 int i = 0;
-
                 printf("\n============================\n");
                 printf("Welcome back Card \n");
                 printf("%s %s \n", USER_SEESION.User->fname, USER_SEESION.User->lname);
                 printf("============================\n");
-
                 strcat(TRANSACTION_DATA, "./transactions/");
                 strcat(TRANSACTION_DATA, USER_SEESION.User->accountID);
                 strcat(TRANSACTION_DATA, ".csv");
@@ -385,12 +401,11 @@ void preLoad2(int sleepTime,int status ,User *userData)
             }
     }
 
-    if(status == 2){
+    if(choice == 2){
         while (1)
         {
             char *userID = getID();
 
-            printf("\n%s", userID);
 
             Login loginData = login(userID);
 
@@ -688,31 +703,35 @@ void displayMenuSwitch()
 
 int main()
 {
-
     /*    system("cls");  */
     printf("\a");
     displayLogo();
-    /*  createFile();
-     readFile();  */
 
     printf("\033[?25l"); // hide cursor
+    Card cardData;
+    int choice_start = selectMenu(0, START_MENU, displayMenu, "Login Method"); // 0 - max menu's array size
 
     processCSVToLinkedList(USERS_DATA, 0);
-    Card cardData = insertCard();
-    if (cardData.status == 1)
+
+    if(choice_start == 1){
+         cardData = insertCard();
+    }
+
+
+    if (cardData.status != 0 || choice_start == 2)
     {
         printf("\n=======================\n");
 
-        preLoad2(0,1,cardData.data);
+        preLoad2(0,choice_start,cardData.status,cardData.data);
 
         printf("\033[1;32m\r> SUCCESS !   ");
         printf("\033[0m"); // Reset text attributes to default
 
         printf("\n=======================\n");
         sleep(2);
+
         // system("cls");
         // printf("\e[?25h"); // show cursor
-
         int choiceAccout; // 0 - max menu's array size
         while (1)
         {

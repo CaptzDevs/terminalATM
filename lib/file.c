@@ -557,7 +557,7 @@ Table processCSVToLinkedList(const char *filename, int choice)
 
     qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID);
 
-    printf("\n Process User Table [/]\n");
+    printf("\nProcess User List [/]\n");
 
     return csvDataTable;
 }

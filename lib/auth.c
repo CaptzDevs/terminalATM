@@ -32,42 +32,52 @@ typedef struct Login
 Login USER_SEESION;
 
 
-char* getPassword();
+char *getPassword(int pass_len);
 int checkPassword(char* storedPassword);
 
 
-char* getPassword(){
-    char* password = (char*)malloc(9 * sizeof(char));; 
+char *getPassword(int pass_len)
+{
+    const int PASS_LEN = pass_len;
+    char *password = (char *)malloc((PASS_LEN + 1) * sizeof(char)); // +1 for null terminator
     char ch;
     int i = 0;
 
-    printf("> Enter your password: ");
+    printf("> ");
 
-    while (1) {
-        ch = getch(); 
-        if (ch == ENTER_KEY) 
-            break;
-        else if (ch == BACKSPACE_KEY) {
-            if (i > 0) {
+    while (i < PASS_LEN)
+    {
+        ch = getch();
+        if (ch == BACKSPACE_KEY)
+        {
+            if (i > 0)
+            {
                 i--;
-                printf("\b \b"); 
+                printf("\b \b");
             }
         }
-      else if (ch >= '0' && ch <= '9' && i < 6) { // Only accept numeric characters and up to 8 digits
+        else if (ch >= '0' && ch <= '9' && i < PASS_LEN)
+        { // Only accept numeric characters and up to 6 digits
             password[i] = ch;
             printf("*");
             i++;
         }
     }
 
-    password[i] = '\0'; 
-    //printf("\nYour password is: %s\n", password);
+    password[i] = '\0';
+
+    printf("\n");
+
     return password;
 }
 
+
 int checkPassword(char* storedPassword){
     //Validate Password
-    char *password = getPassword();
+
+    printf("> Enter your password: ");
+
+    char *password = getPassword(6);
     int checkPassword = 1;
 
     while (checkPassword <= 3 && strcmp(password,storedPassword) != 0)
@@ -93,7 +103,8 @@ int checkPassword(char* storedPassword){
             exit(0);
         }
         
-        password = getPassword();
+        printf("> Enter your password: ");
+        password = getPassword(6);
         checkPassword++;
 
 
