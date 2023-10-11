@@ -229,6 +229,7 @@ Transaction transfers(User *userData, char *destinationAccount, double amount)
 
     Transaction transactionDetail;
     TransactionType type = Transfers;
+    
 
     if (strcmp(userData->accountID, destinationAccount) == 0)
     {
@@ -398,7 +399,7 @@ int confirmtransaction()
 
             break;
 
-        case EXIST_KEY:
+        case EXIT_KEY:
 
             printf("\033[1;31m > Cancel the transaction \n");
             printf("\033[0m");
@@ -775,13 +776,21 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
     return summary;
 }
 
+
+
+
 double getAmount()
 {
-    int MAX_INPUT_LENGTH = 11;
+    int MAX_INPUT_LENGTH = 13;
+    int MAX_DIGITS_BEFORE_DECIMAL  = 7;
+    int MAX_DIGITS_AFTER_DECIMAL  = 2;
+
     char amount[MAX_INPUT_LENGTH];
     char ch;
     int i = 0;
     int decimalPointCount = 0; // Keep track of the number of decimal points
+    int digitsBeforeDecimal = 0; // Keep track of the number of digits before the decimal point
+    int digitsAfterDecimal = 0;  // Keep track of the number of digits after the decimal point
 
     printf("> Enter amount: ");
 
@@ -793,23 +802,33 @@ double getAmount()
         {
             break; // Exit the loop when Enter is pressed
         }
-        else if (ch == EXIST_KEY)
+        else if (ch == EXIT_KEY)
         {
             return 0;
         }
         else if (ch == BACKSPACE_KEY)
-        { // Handle backspace
+        {
+            // Handle backspace
             if (i > 0)
             {
                 i--;
                 printf("\b \b"); // Erase the character
+
                 if (amount[i] == '.')
                 {
                     decimalPointCount--; // Decrement count if a decimal point is removed
                 }
+                else if (digitsAfterDecimal > 0)
+                {
+                    digitsAfterDecimal--; // Decrement count of digits after decimal point
+                }
+                else
+                {
+                    digitsBeforeDecimal--; // Decrement count of digits before decimal point
+                }
             }
         }
-        else if (ch == '.' && i < MAX_INPUT_LENGTH - 1 && decimalPointCount == 0)
+        else if (ch == '.' && i < MAX_INPUT_LENGTH - 1 && decimalPointCount < 1)
         {
             amount[i] = ch;
             printf("%c", amount[i]);
@@ -818,19 +837,37 @@ double getAmount()
         }
         else if (isdigit(ch) && i < MAX_INPUT_LENGTH - 1)
         {
-            amount[i] = ch;
-            printf("%c", amount[i]);
-            i++;
+            if (decimalPointCount > 0)
+            {
+                // Check for digits after the decimal point
+                if (digitsAfterDecimal < MAX_DIGITS_AFTER_DECIMAL)
+                {
+                    amount[i] = ch;
+                    printf("%c", amount[i]);
+                    i++;
+                    digitsAfterDecimal++;
+                }
+            }
+            else
+            {
+                // Check for digits before the decimal point
+                if (digitsBeforeDecimal < MAX_DIGITS_BEFORE_DECIMAL)
+                {
+                    amount[i] = ch;
+                    printf("%c", amount[i]);
+                    i++;
+                    digitsBeforeDecimal++;
+                }
+            }
         }
     }
 
     amount[i] = '\0';
 
-    if (strlen(amount) == 0 || (strlen(amount) == 1 && amount[0] == '.'))
+    if (i == 0 || (i == 1 && amount[0] == '.'))
     {
         // If the string is empty or contains only a single decimal point, it's invalid
         printf("\033[1;31m\nCan't do the transaction with value (.) ! \033[0m\n");
-
         return getAmount();
     }
 
@@ -839,13 +876,14 @@ double getAmount()
 
     if (result <= 0)
     {
-        // If the string is empty or contains only a single decimal point, it's invalid
         printf("\033[1;31m\nCan't do the transaction with value 0 ! \033[0m\n");
-
         return getAmount();
     }
+
     return result;
 }
+
+
 
 char *getID()
 {
@@ -899,7 +937,7 @@ char *getAccountID()
         {
             break;
         }
-        else if (ch == EXIST_KEY)
+        else if (ch == EXIT_KEY)
         {
             accountID = "0000000000";
             return accountID;

@@ -554,7 +554,7 @@ int selectMenu(int min, char arr[][50], selectedMenu displayMenuCallback, char h
                 printf("Escape key pressed\n");
                 break;
             }
-            if (ch == EXIST_KEY)
+            if (ch == EXIT_KEY)
             { // Check for Escape key (optional)
                 num = 0;
                 break;

@@ -1,5 +1,5 @@
 // Key
-#define EXIST_KEY 27
+#define EXIT_KEY 27
 #define ENTER_KEY 13
 #define DELETE_KEY 83
 #define BACKSPACE_KEY 8

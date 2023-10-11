@@ -354,7 +354,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
 
                             break;
 
-                        case EXIST_KEY:
+                        case EXIT_KEY:
 
                             strcpy(userDetail->data.fname, temp.data.fname);
                             strcpy(userDetail->data.lname, temp.data.lname);
@@ -392,7 +392,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                             num = 0;
                             break;
                         }
-                        case EXIST_KEY:
+                        case EXIT_KEY:
                         {
                             printf("EXIT \n");
                             displayMenuCallback(num, arr, header, userDetail);
@@ -437,7 +437,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
 
                             break;
                         }
-                        case EXIST_KEY:
+                        case EXIT_KEY:
                         {
                             printf("EXIT \n");
                             displayMenuCallback(num, arr, header, userDetail);
@@ -480,7 +480,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
 
                             break;
                         }
-                        case EXIST_KEY:
+                        case EXIT_KEY:
                         {
                             printf("EXIT \n");
                             displayMenuCallback(num, arr, header, userDetail);
@@ -497,7 +497,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                     }
 
                     break;
-                case EXIST_KEY: // exit User detail menu
+                case EXIT_KEY: // exit User detail menu
                     return 0;
                     break;
                 default:
@@ -1102,7 +1102,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                 }
             }
 
-            if (ch == EXIST_KEY)
+            if (ch == EXIT_KEY)
             { // Check for Escape key (optional)
                 printf("Escape key pressed\n");
                 printf("EXIT\n");
