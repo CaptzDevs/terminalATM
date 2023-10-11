@@ -21,15 +21,9 @@
 
 
 
-typedef struct Login
-{
-    int isLogin;
-    char loginTime[50];
-    User *User;
-    
-} Login;
 
-Login USER_SEESION;
+
+Login USER_SESSION;
 
 
 char *getPassword(int pass_len);
@@ -134,31 +128,32 @@ Login login(char userID[14]){
          
          if(isValidPassword){
 
-            USER_SEESION.isLogin = 1;
-            strcpy(USER_SEESION.loginTime, getCurrentTime());
+            USER_SESSION.isLogin = 1;
+            strcpy(USER_SESSION.loginTime, getCurrentTime());
 
             qsort(USER_ARR, USER_ARR_SIZE, sizeof(User), sortByAccountID); 
 
             userData = searchAccount(accID);
 
-            USER_SEESION.User = userData.user;
+            USER_SESSION.User = userData.user;
 
-            USER_SEESION = USER_SEESION;
+            USER_SESSION = USER_SESSION;
 
-            return USER_SEESION;
+            saveLoginDataToCSV(LOGIN_LOG_DATA,USER_SESSION,2);
+            return USER_SESSION;
          }else{
-            USER_SEESION.isLogin = 0;
-            strcpy(USER_SEESION.loginTime, '\0');
+            USER_SESSION.isLogin = 0;
+            strcpy(USER_SESSION.loginTime, '\0');
 
-            return USER_SEESION;
+            return USER_SESSION;
          }
 
     }else{
              printf("Hello New User \n");
-            USER_SEESION.User = NULL;
-            USER_SEESION.isLogin = 0;
+            USER_SESSION.User = NULL;
+            USER_SESSION.isLogin = 0;
 
-            return USER_SEESION;
+            return USER_SESSION;
     }
 }
 
@@ -177,19 +172,19 @@ Login loginCard(User* cardData){
          
          if(isValidPassword){
 
-            USER_SEESION.isLogin = 1;
-            strcpy(USER_SEESION.loginTime, getCurrentTime());
+            USER_SESSION.isLogin = 1;
+            strcpy(USER_SESSION.loginTime, getCurrentTime());
 
-            USER_SEESION.User = cardData;
+            USER_SESSION.User = cardData;
 
-            USER_SEESION = USER_SEESION;
-
-            return USER_SEESION;
+            USER_SESSION = USER_SESSION;
+            saveLoginDataToCSV(LOGIN_LOG_DATA,USER_SESSION,1);
+            return USER_SESSION;
          }else{
-            USER_SEESION.isLogin = 0;
-            strcpy(USER_SEESION.loginTime, '\0');
+            USER_SESSION.isLogin = 0;
+            strcpy(USER_SESSION.loginTime, '\0');
 
-            return USER_SEESION;
+            return USER_SESSION;
          }
 
    

@@ -33,6 +33,7 @@ typedef void (*selectedUserMenu)();
 
 /* ============================ */
 char *getTel(int pass_len);
+char *getValidateString();
 
 void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetail);
 int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail);
@@ -50,9 +51,8 @@ List displayUserArray(User *userArray, int arraySize, int choice, int page);
 
 
 UserNode *deleteUser(int id);
-UserNode *editUserData(UserNode *userDetail);
+User *editUserData(User *userDetail);
 SearchData searchTel(char tel[10]);
-
 
 
 
@@ -65,12 +65,12 @@ SearchData searchTel(char tel[10]);
    //* 2. Display Function         [D]
 */
 
-UserNode *editUserData(UserNode *userDetail)
+User *editUserData(User *userDetail)
 {
-    printf("ID           %-5s %s \n", ":", userDetail->data.id);
-    printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
-    printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
-    printf("Tel          %-5s %s\n", ":", userDetail->data.tel);
+    printf(" ID           %-5s %s \n", ":", userDetail->id);
+    printf(" FirstName    %-5s %s \n", ":", userDetail->fname);
+    printf(" Lastname     %-5s %s \n", ":", userDetail->lname);
+    printf(" Tel          %-5s %s\n", ":", userDetail->tel);
     printf("\n");
     printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
 
@@ -78,19 +78,27 @@ UserNode *editUserData(UserNode *userDetail)
     char nLname[250];
     char nTel[11];
     
-    strcpy(nFname, userDetail->data.fname);
-    strcpy(nLname, userDetail->data.lname);
-    strcpy(nTel, userDetail->data.tel);
+    strcpy(nFname, userDetail->fname);
+    strcpy(nLname, userDetail->lname);
+    strcpy(nTel, userDetail->tel);
+
+
+    strcpy(nFname, userDetail->fname);
+    strcpy(nLname, userDetail->lname);
+    strcpy(nTel, userDetail->tel);
+
 
     fflush(stdin);
 
     printf("New First Name : ");
     printf("\033[38;5;75m");
-    int lFname = getStringInput(nFname, sizeof(nFname));
+    strcpy(nFname,getValidateString());
+    int lFname = strlen(nFname);
     printf("\033[0m");
     printf("New Last Name : ");
     printf("\033[38;5;75m");
-    int lLname = getStringInput(nLname, sizeof(nLname));
+    strcpy(nLname,getValidateString());
+    int lLname = strlen(nLname);
     printf("\033[0m");
 
     printf("New Tel. : ");
@@ -102,20 +110,20 @@ UserNode *editUserData(UserNode *userDetail)
 
      printf("%d %d %d",lFname,lLname,lTel);
 
-    if (lFname == 1)
-        strcpy(nFname, userDetail->data.fname);
-    if (lLname == 1)
-        strcpy(nLname, userDetail->data.lname);
+    if (lFname == 0)
+        strcpy(nFname, userDetail->fname);
+    if (lLname == 0)
+        strcpy(nLname, userDetail->lname);
     if (lTel < 10)
-        strcpy(nTel, userDetail->data.tel);
+        strcpy(nTel, userDetail->tel);
 
 
     printf("\n");
     printf("Check new data \n");
     printf("=====================================\n");
-    printf("%-15s -> %s \n", userDetail->data.fname, nFname);
-    printf("%-15s -> %s \n", userDetail->data.lname, nLname);
-    printf("%-15s -> %s \n", userDetail->data.tel, nTel);
+    printf("%-15s -> %s \n", userDetail->fname, nFname);
+    printf("%-15s -> %s \n", userDetail->lname, nLname);
+    printf("%-15s -> %s \n", userDetail->tel, nTel);
     printf("=====================================\n");
 
     printf("Commit the change ? \n");
@@ -123,11 +131,57 @@ UserNode *editUserData(UserNode *userDetail)
     printf("\033[1;31m > ESC    |   Discard \n");
     printf("\033[0m");
 
-    strcpy(userDetail->data.fname, nFname);
-    strcpy(userDetail->data.lname, nLname);
-    strcpy(userDetail->data.tel, nTel);
+    strcpy(userDetail->fname, nFname);
+    strcpy(userDetail->lname, nLname);
+    strcpy(userDetail->tel, nTel);
 
     return userDetail;
+}
+
+char *getValidateString() {
+    const int MAX_LEN = 255;
+    char *tel = (char *)malloc((MAX_LEN + 1) * sizeof(char)); // +1 for null terminator
+    char ch;
+    int i = 0;
+
+    if (tel == NULL) {
+        printf("Memory allocation failed\n");
+        return NULL;
+    }
+
+    while (i < MAX_LEN) {
+        ch = getch();
+
+        if (ch == BACKSPACE_KEY) {
+            if (i > 0) {
+                i--;
+                printf("\b \b");
+            }
+        } else if (ch == ENTER_KEY) {
+            break;
+        } else if (i < MAX_LEN && !(ch >= '0' && ch <= '9')) {
+            tel[i] = ch;
+            printf("%c", tel[i]);
+            i++;
+        }
+    }
+
+    printf("\n");
+    tel[i] = '\0';
+
+    // Now, let's allocate just enough memory to store the actual string.
+    char *result = (char *)malloc((i + 1) * sizeof(char)); // +1 for null terminator
+
+    if (result == NULL) {
+        printf("Memory allocation failed\n");
+        free(tel);
+        return NULL;
+    }
+
+    strcpy(result, tel);
+    free(tel);
+
+    return result;
 }
 
 int getStringInput(char *input, int maxSize)
@@ -280,16 +334,16 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         strcpy(temp.data.lname, userDetail->data.lname);
                         strcpy(temp.data.tel, userDetail->data.tel);
 
-                        editUserData(userDetail);
+                        editUserData(&userDetail->data);
 
                         char ch2;
                         ch2 = getch();
-                        getch();
                         switch (ch2)
                         {
                         case ENTER_KEY:
 
                             saveLinkedListToCSV(USERS_DATA, USER_LIST);
+                            
 
                             printf("=====================================\n");
                             printf("\033[1;32m> Update Data Success \n\033[0m");
@@ -720,8 +774,12 @@ List displayUserList(int choice, int page)
     List userList;
     if (USER_LIST == NULL)
     { // show list
+
         printf(" List is Empty");
-        /* printf("\npress any key to continue...\n"); */
+        userList.currentRow = 0;
+        userList.userData = NULL;
+        return userList;
+
     }
     else
     {
@@ -1010,7 +1068,9 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                         int listSize = getListSize(USER_LIST);
                         int arrSize;
 
-                        USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
+                        /* USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize); */
+
+                        processCSVToLinkedList(USERS_DATA,0);
 
                         /* selectUserArray(1,arrSize,USER_ARR,displayUserArray); */
 
@@ -1526,7 +1586,7 @@ int main(int argc, char const *argv[])
 
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
     
-    User registeredUser = Register("1909300007092", "Captain", "Siwakron");
+    /* User registeredUser = Register("1909300007092", "Captain", "Siwakron"); */
     getch();
 
     userData = processCSVToLinkedList(USERS_DATA, 1);

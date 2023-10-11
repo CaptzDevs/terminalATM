@@ -4,7 +4,7 @@
 #include <malloc.h>
 #include <unistd.h>
 #include <time.h>
-#include <conio.h> 
+#include <conio.h>
 #include <math.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -22,8 +22,6 @@
 #include "lib/file.c"
 #include "lib/search.c"
 */
-
-
 
 typedef enum TransactionType
 {
@@ -163,7 +161,6 @@ Transaction withdraw(User *userData, double amount)
     if (userData->balance < amount)
     {
 
-
         printf("\033[1;31m\nInsufficient balance! \n");
         printf("Can't Withdraw\033[0m");
 
@@ -182,20 +179,19 @@ Transaction withdraw(User *userData, double amount)
         return transactionDetail;
     }
 
+    printf("\n============ Withdraw ============\n");
 
-        printf("\n============ Withdraw ============\n");
+    printf("From      %s %s\n", userData->fname, userData->lname);
+    printf("          %s\n", userData->accountID);
+    printf("\033[38;5;48m");
+    printf("          %.2lf\033[0m\n", userData->balance);
+    printf("              |\n");
+    printf("              |\n");
+    printf("              V\n");
+    printf("\033[38;5;48m");
+    printf("Amount     %.2lf \033[0m\n", amount);
 
-        printf("From      %s %s\n", userData->fname, userData->lname);
-        printf("          %s\n", userData->accountID);
-        printf("\033[38;5;48m");
-        printf("          %.2lf\033[0m\n", userData->balance);
-        printf("              |\n");
-        printf("              |\n");
-        printf("              V\n");
-        printf("\033[38;5;48m");
-        printf("Amount     %.2lf \033[0m\n", amount);
-
-        printf("=================================\n");
+    printf("=================================\n");
 
     int confirmTransaction = confirmtransaction();
 
@@ -234,8 +230,8 @@ Transaction transfers(User *userData, char *destinationAccount, double amount)
     Transaction transactionDetail;
     TransactionType type = Transfers;
 
-
-    if(strcmp(userData->accountID , destinationAccount) == 0){
+    if (strcmp(userData->accountID, destinationAccount) == 0)
+    {
 
         printf("\033[1;31mTransfers with same account! \n");
         printf("Can't Transfers\033[0m");
@@ -253,7 +249,6 @@ Transaction transfers(User *userData, char *destinationAccount, double amount)
         strcpy(transactionDetail.destAccount, destinationAccount);
 
         return transactionDetail;
-
     }
 
     if (userData->balance < amount)
@@ -283,66 +278,89 @@ Transaction transfers(User *userData, char *destinationAccount, double amount)
 
     if (destAccount.result == 1)
     {
-        printf("\n============ Transfers ============\n");
 
-        printf("From      %s %s\n", userData->fname, userData->lname);
-        printf("          %s\n", userData->accountID);
-        printf("              |\n");
-        printf("              |\n");
-        printf("\033[38;5;48m");
-        printf("Amount     %.2lf \033[0m\n", amount);
-        printf("              |\n");
-        printf("              |\n");
-        printf("              V\n");
-        printf("To        %s %s\n", destAccount.user->fname, destAccount.user->lname);
-        printf("          %s\n", destinationAccount);
-
-        printf("=================================\n");
-
-        int confirmTransaction = confirmtransaction();
-
-        if (confirmTransaction == 1)
+        if (destAccount.user->active == 1)
         {
 
-            destAccount.user->balance += amount;
+            printf("\n============ Transfers ============\n");
 
-            userData->balance -= amount;
+            printf("From      %s %s\n", userData->fname, userData->lname);
+            printf("          %s\n", userData->accountID);
+            printf("              |\n");
+            printf("              |\n");
+            printf("\033[38;5;48m");
+            printf("Amount     %.2lf \033[0m\n", amount);
+            printf("              |\n");
+            printf("              |\n");
+            printf("              V\n");
+            printf("To        %s %s\n", destAccount.user->fname, destAccount.user->lname);
+            printf("          %s\n", destinationAccount);
 
-            saveArrayToCSV(USERS_DATA, USER_ARR, USER_ARR_SIZE);
+            printf("=================================\n");
 
-            transactionDetail.result = 1;
+            int confirmTransaction = confirmtransaction();
+
+            if (confirmTransaction == 1)
+            {
+
+                destAccount.user->balance += amount;
+
+                userData->balance -= amount;
+
+                saveArrayToCSV(USERS_DATA, USER_ARR, USER_ARR_SIZE);
+
+                transactionDetail.result = 1;
+                transactionDetail.type = type;
+                transactionDetail.amount = amount;
+                transactionDetail.sourceUser = userData;
+                transactionDetail.destUser = userData;
+
+                strcpy(transactionDetail.time, getCurrentTime());
+                strcpy(transactionDetail.sourceAccount, userData->accountID);
+                strcpy(transactionDetail.destAccount, destinationAccount);
+
+                char destAccTransaction[30];
+                destAccTransaction[0] = '\0';
+
+                strcat(destAccTransaction, "./transactions/");
+                strcat(destAccTransaction, destinationAccount);
+                strcat(destAccTransaction, ".csv");
+
+                saveTransaction(TRANSACTION_DATA, transactionDetail);
+
+                printf("\033[1;32mTransfers %.2lf Success \033[0m\n", amount);
+                printf("Balance     >   \033[38;5;48m\033[4m%.2lf\033[0m \n", userData->balance);
+                showTransaction(transactionDetail);
+
+                transactionDetail.type = 5;
+                saveTransaction(destAccTransaction, transactionDetail);
+            }
+
+            return transactionDetail;
+        }
+        else if (destAccount.user->active == 0)
+        {
+
+            printf("\033[1;31m=======================================\n");
+            printf("Can not continue transaction \n");
+            printf("Destination Account is suspended \n");
+            printf("=======================================\033[0m\n");
+
+            getch();
+
+            transactionDetail.result = 0;
             transactionDetail.type = type;
             transactionDetail.amount = amount;
             transactionDetail.sourceUser = userData;
             transactionDetail.destUser = userData;
 
-            strcpy(transactionDetail.time, getCurrentTime());
-            strcpy(transactionDetail.sourceAccount, userData->accountID);
-            strcpy(transactionDetail.destAccount, destinationAccount);
-
-            char destAccTransaction[30];
-            destAccTransaction[0] = '\0';
-
-            strcat(destAccTransaction, "./transactions/");
-            strcat(destAccTransaction, destinationAccount);
-            strcat(destAccTransaction, ".csv");
-
-            saveTransaction(TRANSACTION_DATA, transactionDetail);
-
-            printf("\033[1;32mTransfers %.2lf Success \033[0m\n", amount);
-            printf("Balance     >   \033[38;5;48m\033[4m%.2lf\033[0m \n", userData->balance);
-            showTransaction(transactionDetail);
-
-            transactionDetail.type = 5;
-            saveTransaction(destAccTransaction, transactionDetail);
+            return transactionDetail;
         }
+    }
+    else
+    {
+        showSearchResult(destAccount, destinationAccount, "Account ID");
 
-        return transactionDetail;
-
-    }else{
-        showSearchResult(destAccount,destinationAccount,"Account ID");
-
-        
         transactionDetail.result = 0;
         transactionDetail.type = type;
         transactionDetail.amount = amount;
@@ -354,7 +372,6 @@ Transaction transfers(User *userData, char *destinationAccount, double amount)
         strcpy(transactionDetail.destAccount, destinationAccount);
 
         return transactionDetail;
-
     }
 }
 
@@ -579,7 +596,6 @@ TableTransaction processTransactionCSVToLinkedList(const char *filename, int cho
     csvDataTable.size = arraySize;
     csvDataTable.success = 1;
 
-
     printf("\nProcessed Transaction Table [/]\n");
 
     return csvDataTable;
@@ -626,7 +642,7 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
                 }
 
                 printf("-------------------------------\n");
-                printf(">> %s",current->data.time);
+                printf(">> %s", current->data.time);
                 if (current->data.type == 5)
                 {
                     printf("%-10s |", "Receive");
@@ -667,10 +683,9 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
     double WT = (summary.totalWithdrawals + summary.totalTransfers);
     double DR = (summary.totalDeposits + summary.totalReceive);
 
-
     summary.balance = DR - WT;
 
-    summary.total = WT+summary.balance;
+    summary.total = WT + summary.balance;
 
     printf("\n");
     printf("============== Summary ==============\n");
@@ -683,7 +698,7 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
 
     printf("\n----------------------------\n");
 
-        printf("Balance           : \033[38;5;48m%.2lf\033[0m\n", summary.balance);
+    printf("Balance           : \033[38;5;48m%.2lf\033[0m\n", summary.balance);
 
     if (summary.total >= 0)
     {
@@ -694,13 +709,13 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
         printf("Total             : \033[38;5;160m%.2lf\033[0m\n", summary.total);
     }
 
-        printf("============================\n");
+    printf("============================\n");
 
     int maxWT = 0;
     int maxDR = 0;
 
-    int thresholds[] = {1000000000,100000000,10000000,1000000, 100000, 10000, 1000, 100};
-    int maxValues[] = {100000000,10000000,1000000,100000, 10000, 1000, 100, 10};
+    int thresholds[] = {1000000000, 100000000, 10000000, 1000000, 100000, 10000, 1000, 100};
+    int maxValues[] = {100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10};
 
     for (int i = 0; i < sizeof(thresholds) / sizeof(thresholds[0]); i++)
     {
@@ -760,7 +775,8 @@ Summary selectTransactionsByDateTimeRange(TransactionNode *transactionData, int 
     return summary;
 }
 
-double getAmount() {
+double getAmount()
+{
     int MAX_INPUT_LENGTH = 11;
     char amount[MAX_INPUT_LENGTH];
     char ch;
@@ -769,29 +785,39 @@ double getAmount() {
 
     printf("> Enter amount: ");
 
-    while (1) {
+    while (1)
+    {
         ch = _getch(); // Use _getch to read a character without Enter
 
-        if (ch == ENTER_KEY) {
+        if (ch == ENTER_KEY)
+        {
             break; // Exit the loop when Enter is pressed
-        
-        }else if(ch == EXIST_KEY){
-             return 0;
         }
-         else if (ch == BACKSPACE_KEY) { // Handle backspace
-            if (i > 0) {
+        else if (ch == EXIST_KEY)
+        {
+            return 0;
+        }
+        else if (ch == BACKSPACE_KEY)
+        { // Handle backspace
+            if (i > 0)
+            {
                 i--;
                 printf("\b \b"); // Erase the character
-                if (amount[i] == '.') {
+                if (amount[i] == '.')
+                {
                     decimalPointCount--; // Decrement count if a decimal point is removed
                 }
             }
-        } else if (ch == '.' && i < MAX_INPUT_LENGTH - 1 && decimalPointCount == 0) {
+        }
+        else if (ch == '.' && i < MAX_INPUT_LENGTH - 1 && decimalPointCount == 0)
+        {
             amount[i] = ch;
             printf("%c", amount[i]);
             i++;
             decimalPointCount++;
-        } else if (isdigit(ch) && i < MAX_INPUT_LENGTH - 1) {
+        }
+        else if (isdigit(ch) && i < MAX_INPUT_LENGTH - 1)
+        {
             amount[i] = ch;
             printf("%c", amount[i]);
             i++;
@@ -800,9 +826,10 @@ double getAmount() {
 
     amount[i] = '\0';
 
-    if (strlen(amount) == 0 || (strlen(amount) == 1 && amount[0] == '.')) {
+    if (strlen(amount) == 0 || (strlen(amount) == 1 && amount[0] == '.'))
+    {
         // If the string is empty or contains only a single decimal point, it's invalid
-       printf("\033[1;31m\nCan't do the transaction with value (.) ! \033[0m\n");
+        printf("\033[1;31m\nCan't do the transaction with value (.) ! \033[0m\n");
 
         return getAmount();
     }
@@ -810,75 +837,91 @@ double getAmount() {
     // Convert the character array to a double
     double result = atof(amount);
 
-    if (result <= 0) {
+    if (result <= 0)
+    {
         // If the string is empty or contains only a single decimal point, it's invalid
-       printf("\033[1;31m\nCan't do the transaction with value 0 ! \033[0m\n");
+        printf("\033[1;31m\nCan't do the transaction with value 0 ! \033[0m\n");
 
         return getAmount();
     }
     return result;
 }
 
-char* getID(){
-    char* accountID = (char*)malloc(10 * sizeof(char));; 
+char *getID()
+{
+    char *accountID = (char *)malloc(10 * sizeof(char));
+    ;
 
     char ch;
     int i = 0;
 
     printf("> Enter ID CARD: ");
 
-    while (1) {
-        ch = getch(); 
-        if (ch == ENTER_KEY) 
+    while (1)
+    {
+        ch = getch();
+        if (ch == ENTER_KEY)
             break;
-        else if (ch == BACKSPACE_KEY) {
-            if (i > 0) {
+        else if (ch == BACKSPACE_KEY)
+        {
+            if (i > 0)
+            {
                 i--;
-                printf("\b \b"); 
+                printf("\b \b");
             }
         }
-      else if (ch >= '0' && ch <= '9' && i < 13) { // Only accept numeric characters and up to 8 digits
+        else if (ch >= '0' && ch <= '9' && i < 13)
+        { // Only accept numeric characters and up to 8 digits
             accountID[i] = ch;
-            printf("%c",accountID[i]);
+            printf("%c", accountID[i]);
             i++;
         }
     }
 
-    accountID[i] = '\0'; 
-    //printf("\nYour accountID is: %s\n", accountID);
+    accountID[i] = '\0';
+    // printf("\nYour accountID is: %s\n", accountID);
     return accountID;
 }
 
-char* getAccountID(){
-    char* accountID = (char*)malloc(10 * sizeof(char));; 
+char *getAccountID()
+{
+    char *accountID = (char *)malloc(10 * sizeof(char));
+    ;
     char ch;
     int i = 0;
 
     printf("> Enter accountID: ");
 
-    while (1) {
-        ch = getch(); 
-        if (ch == ENTER_KEY && i == 10){
+    while (1)
+    {
+        ch = getch();
+        if (ch == ENTER_KEY && i == 10)
+        {
             break;
-        }else if(ch == EXIST_KEY){
-            accountID = "0000000000"; 
+        }
+        else if (ch == EXIST_KEY)
+        {
+            accountID = "0000000000";
             return accountID;
         }
-        else if (ch == BACKSPACE_KEY) {
-            if (i > 0) {
+        else if (ch == BACKSPACE_KEY)
+        {
+            if (i > 0)
+            {
                 i--;
-                printf("\b \b"); 
+                printf("\b \b");
             }
         }
-      else if (ch >= '0' && ch <= '9' && i < 10) { // Only accept numeric characters and up to 8 digits
+        else if (ch >= '0' && ch <= '9' && i < 10)
+        { // Only accept numeric characters and up to 8 digits
             accountID[i] = ch;
-            printf("%c",accountID[i]);
+            printf("%c", accountID[i]);
             i++;
         }
     }
 
-    accountID[i] = '\0'; 
-    //printf("\nYour accountID is: %s\n", accountID);
+    accountID[i] = '\0';
+    // printf("\nYour accountID is: %s\n", accountID);
     return accountID;
 }
 
@@ -908,7 +951,7 @@ int _main(int argc, char const *argv[])
 
     char *userID = getID();
 
-    printf("\n%s",userID);
+    printf("\n%s", userID);
 
     Login loginData = login(userID);
 
@@ -922,11 +965,11 @@ int _main(int argc, char const *argv[])
 
         printf("\n============================\n");
         printf("Welcome back \n");
-        printf("%s %s \n", USER_SEESION.User->fname, USER_SEESION.User->lname);
+        printf("%s %s \n", USER_SESSION.User->fname, USER_SESSION.User->lname);
         printf("============================\n");
 
         strcat(TRANSACTION_DATA, "./transactions/");
-        strcat(TRANSACTION_DATA, USER_SEESION.User->accountID);
+        strcat(TRANSACTION_DATA, USER_SESSION.User->accountID);
         strcat(TRANSACTION_DATA, ".csv");
 
         printf(">> %s \n", TRANSACTION_DATA);
@@ -938,18 +981,15 @@ int _main(int argc, char const *argv[])
 
     /* char *accountID = getAccountID(); */
     double amount = getAmount();
-    
-    deposit(USER_SEESION.User,amount); 
 
-    
+    deposit(USER_SESSION.User, amount);
 
-
-    /*  deposit(USER_SEESION.User,1500); */
-    /* transfers(USER_SEESION.User, "00000000010", 100); */
-    /*    deposit(USER_SEESION.User,1500);
-       transfers(USER_SEESION.User,"00000000010",22300);
-       withdraw(USER_SEESION.User,999999999);
-       check(USER_SEESION.User);
+    /*  deposit(USER_SESSION.User,1500); */
+    /* transfers(USER_SESSION.User, "00000000010", 100); */
+    /*    deposit(USER_SESSION.User,1500);
+       transfers(USER_SESSION.User,"00000000010",22300);
+       withdraw(USER_SESSION.User,999999999);
+       check(USER_SESSION.User);
         */
 
     TableTransaction transactionData = processTransactionCSVToLinkedList(TRANSACTION_DATA, 1);
@@ -959,6 +999,6 @@ int _main(int argc, char const *argv[])
     const char *endDateTime = "2030-12-31 23:59:59";
 
     // Call the function to select transactions within the date and time range
-     /*   Summary summary = selectTransactionsByDateTimeRange(transactionData.list,
-        transactionData.numRows, startDateTime, endDateTime, 0); */
+    /*   Summary summary = selectTransactionsByDateTimeRange(transactionData.list,
+       transactionData.numRows, startDateTime, endDateTime, 0); */
 }

@@ -46,3 +46,12 @@ typedef struct List
 
 } List;
 
+
+typedef struct Login
+{
+    int isLogin;
+    char loginTime[50];
+    User *User;
+    
+} Login;
+

@@ -19,7 +19,10 @@
 #define USERS_DATA "./data/Users.csv"
 #define ACCOUNTS_DATA "./data/Accounts.csv"
 
+
 #define CARD_DATA "./card/SIAM-ID/data.text"
+
+#define LOGIN_LOG_DATA "./log/login_log.csv"
 
 
 //*---------------------------------
@@ -34,6 +37,12 @@
 char *USER_MENU[] = {
     "EDIT",
     "DELETE",
+    "ACTIVE && SUSPEND CARD",
+    "ENABLE && DISABLE CARD"
+};
+
+char *USER_ACTION_MENU[] = {
+    "EDIT",
     "ACTIVE && SUSPEND CARD",
     "ENABLE && DISABLE CARD"
 };
@@ -69,12 +78,15 @@ int USER_ARR_SIZE = 0;
 int FIELD_NAME_SIZE = sizeof(FIELD_NAME) / sizeof(FIELD_NAME[0]);
 int FIELD_TYPE_SIZE = sizeof(FIELD_TYPE) / sizeof(FIELD_TYPE[0]);
 int USER_MENU_SIZE = sizeof(USER_MENU) / sizeof(USER_MENU[0]);
+int USER_ACTIVE_MENU_SIZE = sizeof(USER_ACTION_MENU) / sizeof(USER_ACTION_MENU[0]);
 
 UserNode *USER_LIST = NULL;
 User *USER_ARR = NULL;
 time_t lastestTime;
 
 void saveLinkedListToCSV(const char *filename, UserNode *head);
+void saveArrayToCSV(const char *filename, User *userArray, int arraySize);
+
 void saveUser(const char *filename, const User *userData);
 void appendToCSV(const char *filename, const User *userData);
 void copyTo(char *dest, const char *src, size_t destSize);
@@ -92,6 +104,25 @@ char *getCurrentTime();
 Table processCSVToLinkedList(const char *filename, int choice);
 User *linkedListToArray(UserNode *head, int linkSize, int *arraySize);
 
+
+
+void saveLoginDataToCSV(const char *filename, Login loginData,int type)
+{
+    FILE *file = fopen(filename, "a");
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+        fprintf(file, "%s,%s,%d\n",
+                loginData.User->id,
+                loginData.loginTime,
+                type
+        );
+
+    fclose(file);
+}
 
 
 void saveLinkedListToCSV(const char *filename, UserNode *head)

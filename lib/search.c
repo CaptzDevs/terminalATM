@@ -22,8 +22,6 @@ SearchData binarySearchAccountID(User arr[], int size, int target);
 SearchData binarySearchTel(User arr[], int size, int target);
 
 
-
-
 void showSearchResult(SearchData result , char* prop ,char* propName ){
 
        if(_SEARCH_RESULT){

@@ -1,6 +1,5 @@
 
 
-
 // Money Color \033[38;5;48m
 
 int space[] = {0, 15, 15, 15, 15, 15};
@@ -14,10 +13,10 @@ typedef void (*selectedUserMenu)();
 char *getTel(int pass_len);
 char *createPassword();
 
-void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetail);
-int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail);
+void displayUserMenu(int choice, char *arr[], char header[], User *userDetail);
+int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], User *userDetail);
 
-int sortByTel(const void* a, const void* b);
+int sortByTel(const void *a, const void *b);
 int getStringInput(char *input, int maxSize);
 int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
 int selectUserList(int min, int max, selectedList tableCallBack);
@@ -26,70 +25,64 @@ List displayUserList(int choice, int page);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
 
 UserNode *deleteUser(int id);
-UserNode *editUserData(UserNode *userDetail);
+User *editUserData(User *userDetail);
 SearchData searchTel(char tel[10]);
-
-
 
 /* ============================ */
 
-/* 
+/*
     //* 2 Type of menu function
    //* 1. Controller Function      [C]
    //* 2. Display Function         [D]
 */
-
-UserNode *editUserData(UserNode *userDetail)
+User *editUserData(User *userDetail)
 {
-    printf("ID           %-5s %s \n", ":", userDetail->data.id);
-    printf("FirstName    %-5s %s \n", ":", userDetail->data.fname);
-    printf("Lastname     %-5s %s \n", ":", userDetail->data.lname);
-    printf("Tel          %-5s %s\n", ":", userDetail->data.tel);
+    printf("ID           %-5s %s \n", ":", userDetail->id);
+    printf("FirstName    %-5s %s \n", ":", userDetail->fname);
+    printf("Lastname     %-5s %s \n", ":", userDetail->lname);
+    printf("Tel          %-5s %s\n", ":", userDetail->tel);
     printf("\n");
     printf("\n\033[4m\033[38;5;50mLeave it blank for not change\033[0m\n\n");
 
     char nFname[250];
     char nLname[250];
     char nTel[11];
-    
-    strcpy(nFname, userDetail->data.fname);
-    strcpy(nLname, userDetail->data.lname);
-    strcpy(nTel, userDetail->data.tel);
+
+    strcpy(nFname, userDetail->fname);
+    strcpy(nLname, userDetail->lname);
+    strcpy(nTel, userDetail->tel);
 
     fflush(stdin);
 
-    printf("New First Name : ");
+/*     printf("New First Name : ");
     printf("\033[38;5;75m");
     int lFname = getStringInput(nFname, sizeof(nFname));
     printf("\033[0m");
     printf("New Last Name : ");
     printf("\033[38;5;75m");
     int lLname = getStringInput(nLname, sizeof(nLname));
-    printf("\033[0m");
+    printf("\033[0m"); */
 
     printf("New Tel. : ");
     printf("\033[38;5;75m");
 
-    strcpy(nTel,getTel(10));
+    strcpy(nTel, getTel(10));
     int lTel = strlen(nTel);
     printf("\033[0m");
 
-     printf("%d %d %d",lFname,lLname,lTel);
+  /*   printf("%d %d %d", lFname, lLname, lTel);
 
     if (lFname == 1)
-        strcpy(nFname, userDetail->data.fname);
+        strcpy(nFname, userDetail->fname);
     if (lLname == 1)
-        strcpy(nLname, userDetail->data.lname);
+        strcpy(nLname, userDetail->lname); */
     if (lTel < 10)
-        strcpy(nTel, userDetail->data.tel);
-
+        strcpy(nTel, userDetail->tel);
 
     printf("\n");
     printf("Check new data \n");
     printf("=====================================\n");
-    printf("%-15s -> %s \n", userDetail->data.fname, nFname);
-    printf("%-15s -> %s \n", userDetail->data.lname, nLname);
-    printf("%-15s -> %s \n", userDetail->data.tel, nTel);
+    printf("%-15s -> %s \n", userDetail->tel, nTel);
     printf("=====================================\n");
 
     printf("Commit the change ? \n");
@@ -97,9 +90,7 @@ UserNode *editUserData(UserNode *userDetail)
     printf("\033[1;31m > ESC    |   Discard \n");
     printf("\033[0m");
 
-    strcpy(userDetail->data.fname, nFname);
-    strcpy(userDetail->data.lname, nLname);
-    strcpy(userDetail->data.tel, nTel);
+    strcpy(userDetail->tel, nTel);
 
     return userDetail;
 }
@@ -119,7 +110,7 @@ int getStringInput(char *input, int maxSize)
 }
 
 /* [D] */
-void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetail)
+void displayUserMenu(int choice, char *arr[], char header[], User *userDetail)
 {
 
     if (_RFMENU)
@@ -127,17 +118,17 @@ void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetai
 
     printf("\n============== User Detail ==============\n");
 
-    printf(" #              : %d \n", userDetail->data._id);
-    printf(" ID             : %s \n", userDetail->data.id);
-    printf(" fname          : %s \n", userDetail->data.fname);
-    printf(" lname          : %s \n", userDetail->data.lname);
-    printf(" tel            : %s \n", userDetail->data.tel);
-    printf(" accountID      : %s \n", userDetail->data.accountID);
-    printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", userDetail->data.balance);
+    printf(" #              : %d \n", userDetail->_id);
+    printf(" ID             : %s \n", userDetail->id);
+    printf(" fname          : %s \n", userDetail->fname);
+    printf(" lname          : %s \n", userDetail->lname);
+    printf(" tel            : %s \n", userDetail->tel);
+    printf(" accountID      : %s \n", userDetail->accountID);
+    printf(" balance        : \033[38;5;48m%.2lf $ \033[0m \n", userDetail->balance);
     printf("\n================= Card Status =============\n");
-    printf(" active         : %s \n", userDetail->data.active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
-    printf(" status         : %s \n", userDetail->data.status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
-    printf(" registerDate   : %s \n", userDetail->data.registerTime);
+    printf(" active         : %s \n", userDetail->active == 1 ? "\033[0;32mCard is Activated\033[0m" : "\033[0;31mCard is Suspended\033[0m");
+    printf(" status         : %s \n", userDetail->status == 1 ? "\033[0;32mCard is Enabled\033[0m" : "\033[0;31mCard is Disabled\033[0m");
+    printf(" registerDate   : %s \n", userDetail->registerTime);
     printf("=====================================\n");
 
     /*     char(*optionPtr)[50];
@@ -148,16 +139,16 @@ void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetai
     printf("%s :\n", header);
 
     int i = 0;
-    while (i < USER_MENU_SIZE)
+    while (i < USER_ACTIVE_MENU_SIZE)
     {
         if (choice == optionIndex)
             printf("\033[1;32m \033[4m");
 
-        if (choice == 3 && optionIndex == 3)
-            if (userDetail->data.active == 1)
+        if (choice == 2 && optionIndex == 2)
+            if (userDetail->active == 1)
                 printf("\033[1;31m");
-        if (choice == 4 && optionIndex == 4)
-            if (userDetail->data.status == 1)
+        if (choice ==3 && optionIndex ==3)
+            if (userDetail->status == 1)
                 printf("\033[1;31m");
         ;
 
@@ -183,12 +174,12 @@ void displayUserMenu(int choice, char *arr[], char header[], UserNode *userDetai
 }
 
 /* [C] */
-int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], UserNode *userDetail)
+int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, char header[], User *userDetail)
 {
     char ch;
     int i = 0;
     int num = 1;
-    int max = USER_MENU_SIZE;
+    int max = USER_ACTIVE_MENU_SIZE;
 
     displayMenuCallback(num, arr, header, userDetail);
 
@@ -250,9 +241,9 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         printf("===============================\n");
 
                         UserNode temp;
-                        strcpy(temp.data.fname, userDetail->data.fname);
-                        strcpy(temp.data.lname, userDetail->data.lname);
-                        strcpy(temp.data.tel, userDetail->data.tel);
+                        strcpy(temp.data.fname, userDetail->fname);
+                        strcpy(temp.data.lname, userDetail->lname);
+                        strcpy(temp.data.tel, userDetail->tel);
 
                         editUserData(userDetail);
 
@@ -263,7 +254,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         {
                         case ENTER_KEY:
 
-                            saveLinkedListToCSV(USERS_DATA, USER_LIST);
+                            saveArrayToCSV(USERS_DATA,USER_ARR,USER_ARR_SIZE);
 
                             printf("=====================================\n");
                             printf("\033[1;32m> Update Data Success \n\033[0m");
@@ -276,9 +267,9 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
 
                         case EXIST_KEY:
 
-                            strcpy(userDetail->data.fname, temp.data.fname);
-                            strcpy(userDetail->data.lname, temp.data.lname);
-                            strcpy(userDetail->data.tel, temp.data.tel);
+                            strcpy(userDetail->fname, temp.data.fname);
+                            strcpy(userDetail->lname, temp.data.lname);
+                            strcpy(userDetail->tel, temp.data.tel);
 
                             printf("EXIT \n");
                             displayMenuCallback(num, arr, header, userDetail);
@@ -291,44 +282,12 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
 
                         break;
 
-                    case 2: // Delete
+                    case 2: // Suspend card
                         printf("=====================\n");
-                        printf("%s\n", USER_MENU[num - 1]);
-                        printf("=====================\n");
-
-                        printf("\033[0;31m Do you want to delete this data ? \033[0m\n");
-                        char chDelete;
-                        chDelete = getch();
-                        switch (chDelete)
-                        {
-                        case ENTER_KEY:
-                        {
-                            USER_LIST = deleteUser(userDetail->data._id);
-                            saveLinkedListToCSV(USERS_DATA, USER_LIST);
-                            int listSize = getListSize(USER_LIST);
-                            int arrSize;
-                            USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
-                       /*      free(userDetail); */
-                            num = 0;
-                            break;
-                        }
-                        case EXIST_KEY:
-                        {
-                            printf("EXIT \n");
-                            displayMenuCallback(num, arr, header, userDetail);
-                        }
-                        default:
-                            break;
-                        }
-
-                        break;
-
-                    case 3: // Suspend card
-                        printf("=====================\n");
-                        printf("%s\n", userDetail->data.active == 1 ? "SUSPEND CARD" : "ACTIVE CARD");
+                        printf("%s\n", userDetail->active == 1 ? "SUSPEND CARD" : "ACTIVE CARD");
                         printf("=====================\n");
 
-                        printf(userDetail->data.active == 1 ? "\033[0;31mDo you want to Suspend this card" : "\033[0;32mDo you want to Active this card");
+                        printf(userDetail->active == 1 ? "\033[0;31mDo you want to Suspend this card" : "\033[0;32mDo you want to Active this card");
 
                         printf(" ?\033[0m \n");
 
@@ -339,19 +298,19 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         {
                         case ENTER_KEY:
                         {
-                            if (userDetail->data.active == 1)
+                            if (userDetail->active == 1)
                             {
-                                userDetail->data.active = 0;
-                                saveLinkedListToCSV(USERS_DATA, USER_LIST);
+                                userDetail->active = 0;
+                                saveArrayToCSV(USERS_DATA, USER_ARR, USER_ARR_SIZE);
                                 printf("\033[0;31m> Suspended card [/]\033[0m ");
-                                USER_MENU[2] = "Active Card";
+                                USER_ACTION_MENU[1] = "Active Card";
                             }
-                            else if (userDetail->data.active == 0)
+                            else if (userDetail->active == 0)
                             {
-                                userDetail->data.active = 1;
-                                saveLinkedListToCSV(USERS_DATA, USER_LIST);
+                                userDetail->active = 1;
+                                saveArrayToCSV(USERS_DATA, USER_ARR, USER_ARR_SIZE);
                                 printf("\033[0;32m> Active card [/]\033[0m ");
-                                USER_MENU[2] = "Suspended Card";
+                                USER_ACTION_MENU[1] = "Suspended Card";
                             }
                             displayMenuCallback(num, arr, header, userDetail);
 
@@ -367,11 +326,11 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         }
 
                         break;
-                    case 4: // Disable card
+                    case 3: // Disable card
                         printf("=====================\n");
-                        printf("%s\n", userDetail->data.status == 1 ? "DISABLE CARD" : "ENABLE CARD");
+                        printf("%s\n", userDetail->status == 1 ? "DISABLE CARD" : "ENABLE CARD");
                         printf("=====================\n");
-                        printf(userDetail->data.status == 1 ? "\033[0;31mDo you want to Disable this card" : "\033[0;32mDo you want to Enable this card");
+                        printf(userDetail->status == 1 ? "\033[0;31mDo you want to Disable this card" : "\033[0;32mDo you want to Enable this card");
                         printf("?\033[0m \n");
 
                         char chStatus;
@@ -381,19 +340,21 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         {
                         case ENTER_KEY:
                         {
-                            if (userDetail->data.status == 1)
+                            if (userDetail->status == 1)
                             {
-                                userDetail->data.status = 0;
-                                saveLinkedListToCSV(USERS_DATA, USER_LIST);
+                                userDetail->status = 0;
+                                saveArrayToCSV(USERS_DATA, USER_ARR, USER_ARR_SIZE);
+
                                 printf("\033[0;31m> Disable card [/]\033[0m ");
-                                USER_MENU[3] = "Enable Card";
+                                USER_ACTION_MENU[2] = "Enable Card";
                             }
-                            else if (userDetail->data.status == 0)
+                            else if (userDetail->status == 0)
                             {
-                                userDetail->data.status = 1;
-                                saveLinkedListToCSV(USERS_DATA, USER_LIST);
+                                userDetail->status = 1;
+                                saveArrayToCSV(USERS_DATA, USER_ARR, USER_ARR_SIZE);
+
                                 printf("\033[0;32m> Enable card [/]\033[0m ");
-                                USER_MENU[3] = "Disable Card";
+                                USER_ACTION_MENU[2] = "Disable Card";
                             }
 
                             displayMenuCallback(num, arr, header, userDetail);
@@ -956,11 +917,11 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                     if (rowDetail.userData)
                     {
-                        USER_MENU[2] = rowDetail.userData->data.active == 0 ? "Active Card" : "Suspend Card";
-                        USER_MENU[3] = rowDetail.userData->data.status == 0 ? "Enable Card" : "Disabled Card";
+                        USER_ACTION_MENU[1] = rowDetail.userData->data.active == 0 ? "Active Card" : "Suspend Card";
+                        USER_ACTION_MENU[2] = rowDetail.userData->data.status == 0 ? "Enable Card" : "Disabled Card";
 
                         /* checkFileChangeOnce(USERS_DATA); */
-                        int exitUserMenu = selectUserMenu(0, USER_MENU, displayUserMenu, "User Action", rowDetail.userData);
+                        int exitUserMenu = selectUserMenu(0, USER_ACTION_MENU, displayUserMenu, "User Action", USER_SESSION.User);
 
                         if (exitUserMenu == 0)
                         {
@@ -1021,7 +982,6 @@ int selectUserList(int min, int max, selectedList tableCallBack)
                 printf("Escape key pressed\n");
                 printf("EXIT\n");
 
-
                 break;
             }
         }
@@ -1034,7 +994,6 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
 /* Utilities Function */
 
-
 char *getTel(int pass_len)
 {
     const int PASS_LEN = pass_len;
@@ -1045,7 +1004,7 @@ char *getTel(int pass_len)
     while (i <= PASS_LEN)
     {
         ch = getch();
- 
+
         if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
@@ -1061,33 +1020,36 @@ char *getTel(int pass_len)
             i++;
         }
 
-        if(ch == ENTER_KEY && i < PASS_LEN){
+        if (ch == ENTER_KEY && i < PASS_LEN)
+        {
             tel[0] = '\0';
             break;
         }
-    
-    
-        if(i == PASS_LEN && ch == ENTER_KEY){
+
+        if (i == PASS_LEN && ch == ENTER_KEY)
+        {
             tel[i] = '\0';
             SearchData checkTel = searchTel(tel);
             printf("\n");
 
-            if(checkTel.result == 0){
+            if (checkTel.result == 0)
+            {
                 printf("\033[1;32m");
                 printf("You can use this number [/]");
                 printf("\033[0m");
 
                 break;
-            }else{
+            }
+            else
+            {
                 printf("\033[1;31m");
-                printf("This number (%s) is registed by other account\n",tel);
+                printf("This number (%s) is registed by other account\n", tel);
                 printf("\033[0m");
 
                 printf("Try Again\n");
                 printf("[66+] > ");
 
-
-                i  = 0;
+                i = 0;
             }
         }
     }
@@ -1095,9 +1057,6 @@ char *getTel(int pass_len)
     printf("\n");
     return tel;
 }
-
-
-
 
 User searchUser(User *userArray, int id)
 {
@@ -1212,7 +1171,6 @@ UserNode *deleteUser(int id)
 
     return USER_LIST; // Return the head of the modified list
 }
-
 
 int getRowsByColumn(int index)
 {
@@ -1336,9 +1294,8 @@ User Register(const char id[], const char fname[], const char lname[])
 
     printf("Enter your number \n");
     printf("[66+] > ");
-    
-  
-    strncpy(newUser.tel,  getTel(10) , sizeof(newUser.tel) - 1);
+
+    strncpy(newUser.tel, getTel(10), sizeof(newUser.tel) - 1);
     newUser.tel[sizeof(newUser.tel) - 1] = '\0';
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
@@ -1414,13 +1371,6 @@ void generateRandomUserData(User *u)
     /*   u->age = 18 + rand() % 43; */
 }
 
-
-
-
-
-
-
-
 char *createPassword()
 {
 
@@ -1446,9 +1396,7 @@ char *createPassword()
     }
 }
 
-
-
-/* 
+/*
 int main(int argc, char const *argv[])
 {
     printf("\033[?25l"); // hide cursor
@@ -1465,7 +1413,7 @@ int main(int argc, char const *argv[])
     printf("Program started at: %s", asctime(localTime));
 
     Table userData = processCSVToLinkedList(USERS_DATA, 1);
-    
+
     User registeredUser = Register("1909300007092", "Captain", "Siwakron");
     getch();
 
