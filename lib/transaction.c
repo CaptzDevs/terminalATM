@@ -417,7 +417,7 @@ int confirmtransaction()
 void saveTransaction(const char *filename, Transaction transactionDetail)
 {
     int isfileExist = isfileExists(filename);
-
+    
     FILE *file;
     if (isfileExist == 1)
     {
@@ -430,6 +430,7 @@ void saveTransaction(const char *filename, Transaction transactionDetail)
 
     if (file == NULL)
     {
+
         perror("Unable to open file");
         exit(1);
     }
@@ -888,7 +889,6 @@ double getAmount()
 char *getID()
 {
     char *accountID = (char *)malloc(10 * sizeof(char));
-    ;
 
     char ch;
     int i = 0;
@@ -900,6 +900,13 @@ char *getID()
         ch = getch();
         if (ch == ENTER_KEY)
             break;
+        if(ch == EXIT_KEY)
+          {
+            printf("Exit");
+             accountID = "000";
+            return accountID;
+
+          }
         else if (ch == BACKSPACE_KEY)
         {
             if (i > 0)

@@ -195,12 +195,14 @@ int asyncLoadingCircle(int timeoutArg, Operation checkFn)
 
     if (i == timeout)
     {
+
         printf("\nTimeout!");
         return 0;
     }
 
     return isClearTimeout;
 }
+
 
 Card asyncLoadingCard(int timeoutArg, OperationCard checkFn)
 {
@@ -222,13 +224,14 @@ Card asyncLoadingCard(int timeoutArg, OperationCard checkFn)
         fflush(stdout);                // Flush the output buffer to ensure immediate printing
         nanosleep(&delay, NULL);
         i++;
-
+           // Check for Esc key press
         isClearTimeout = checkFn();
     }
 
     if (i == timeout)
     {
         printf("\nTimeout!");
+        sleep(2);
         return isClearTimeout;
     }
 
@@ -251,6 +254,9 @@ Card insertCard()
 
     isInsertCard = asyncLoadingCard(30, checkInsertCard);
 
+    if(isInsertCard.status == 0){
+        return isInsertCard;
+    }
     if (isInsertCard.status == 1)
     {
         renderString("\rCARD IS INSERTED         [/]", 1);
@@ -291,7 +297,7 @@ void displayLogo()
     printf("|      ATM CARD APP      |\n");
     printf("|        v1.0.0          |\n");
     printf("------------------------\n");
-    if (USER_SESSION.User)
+    if (USER_SESSION.isLogin)
     {
 
         printf("Balance     : \033[38;5;48m%.2lf\033[0m\n", USER_SESSION.User->balance);
@@ -350,7 +356,7 @@ void moveUp()
     printf(">");
 }
 
-void preLoad2(int sleepTime, int choice, int status, User *userData)
+int preLoad2(int sleepTime, int choice, int status, User *userData)
 {
     printf("> Initial                ");
     loadingCircle(sleepTime);
@@ -362,7 +368,27 @@ void preLoad2(int sleepTime, int choice, int status, User *userData)
 
     if (choice != 0 && status == 2)
     {
+
         Register(userData->id, userData->fname, userData->lname);
+        processCSVToLinkedList(USERS_DATA, 0);
+        Login loginData = login(userData->id);
+
+        printf(">>- %d", loginData.isLogin);
+        if (loginData.isLogin == 1)
+        {
+            printf("Logged : %s", loginData.loginTime);
+
+            int i = 0;
+            printf("\n============================\n");
+            printf("Welcome back Card \n");
+            printf("%s %s \n", USER_SESSION.User->fname, USER_SESSION.User->lname);
+            printf("============================\n");
+            strcat(TRANSACTION_DATA, "./transactions/");
+            strcat(TRANSACTION_DATA, USER_SESSION.User->accountID);
+            strcat(TRANSACTION_DATA, ".csv");
+
+            printf(">> %s \n", TRANSACTION_DATA);
+        }
     }
     if (choice == 1 && status == 1)
     {
@@ -391,26 +417,40 @@ void preLoad2(int sleepTime, int choice, int status, User *userData)
         while (1)
         {
             char *userID = getID();
-
-            Login loginData = login(userID);
-
-            if (loginData.isLogin == 1)
+            if (strcmp(userID, "000") == 0)
             {
-                printf("Logged : %s", loginData.loginTime);
+                return 0;
+            }
+            else
+            {
+                if (strlen(userID) < 13)
+                {
+                    printf("\nPlease Enter the ID card number \n");
+                }
+                else
+                {
 
-                int i = 0;
+                    Login loginData = login(userID);
 
-                printf("\n============================\n");
-                printf("Welcome back \n");
-                printf("%s %s \n", USER_SESSION.User->fname, USER_SESSION.User->lname);
-                printf("============================\n");
+                    if (loginData.isLogin == 1)
+                    {
+                        printf("Logged : %s", loginData.loginTime);
 
-                strcat(TRANSACTION_DATA, "./transactions/");
-                strcat(TRANSACTION_DATA, USER_SESSION.User->accountID);
-                strcat(TRANSACTION_DATA, ".csv");
+                        int i = 0;
 
-                printf(">> %s \n", TRANSACTION_DATA);
-                break;
+                        printf("\n============================\n");
+                        printf("Welcome back \n");
+                        printf("%s %s \n", USER_SESSION.User->fname, USER_SESSION.User->lname);
+                        printf("============================\n");
+
+                        strcat(TRANSACTION_DATA, "./transactions/");
+                        strcat(TRANSACTION_DATA, USER_SESSION.User->accountID);
+                        strcat(TRANSACTION_DATA, ".csv");
+
+                        printf(">> %s \n", TRANSACTION_DATA);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -419,7 +459,6 @@ void preLoad2(int sleepTime, int choice, int status, User *userData)
     loadingCircle(sleepTime);
     printf("[/] \n");
 
-    /*    checkPassword(); */
     printf("> Loging In              ");
     loadingCircle(sleepTime);
     printf("[/] \n");
@@ -427,6 +466,8 @@ void preLoad2(int sleepTime, int choice, int status, User *userData)
     printf("> Checking               ");
     loadingCircle(sleepTime);
     printf("[/] \n");
+
+    return 1;
 }
 
 void preLoad()
@@ -722,58 +763,81 @@ int main()
     /*    system("cls");  */
     printf("\a");
     getch();
-    displayLogo();
 
     printf("\033[?25l"); // hide cursor
     Card cardData;
-    int choice_start = selectMenu(0, START_MENU, displayMenu, "Login Method"); // 0 - max menu's array size
-
-    processCSVToLinkedList(USERS_DATA, 0);
-
-    if (choice_start == 1)
+    while (1)
     {
-        cardData = insertCard();
-    }
+    displayLogo();
 
-    if (cardData.status != 0 || choice_start == 2)
-    {
-        printf("\n=======================\n");
+        /* code */
 
-        preLoad2(0, choice_start, cardData.status, cardData.data);
+        int choice_start = selectMenu(0, START_MENU, displayMenu, "Login Method"); // 0 - max menu's array size
 
-        printf("\033[1;32m\r> SUCCESS !   ");
-        printf("\033[0m"); // Reset text attributes to default
-
-        printf("\n=======================\n");
-        sleep(2);
-
-        // system("cls");
-        // printf("\e[?25h"); // show cursor
-        int choiceAccount = 1; // 0 - max menu's array size
-        while (1)
+          if (choice_start != 0)
         {
-            choiceAccount = selectMenu(0, ACCOUNT_MENU, displayMenu, "Account Menu"); // 0 - max menu's array size
-            switch (choiceAccount)
-            {
-            case 1:
-                displayMenuSwitch();
-                break;
-            case 2:
-            {
-                USER_ACTION_MENU[1] = USER_SESSION.User->active == 0 ? "Active Card" : "Suspend Card";
-                USER_ACTION_MENU[2] = USER_SESSION.User->status == 0 ? "Enable Card" : "Disabled Card";
+            processCSVToLinkedList(USERS_DATA, 0);
 
-                int exitUserMenu = selectUserMenu(0, USER_ACTION_MENU, displayUserMenu, "User Action", USER_SESSION.User);
+        }
+
+
+        if (choice_start == 1)
+        {
+            cardData = insertCard();
+        }
+
+        if (cardData.status != 0 || choice_start == 2)
+        {
+            printf("\n=======================\n");
+
+            int isSuccess = preLoad2(0, choice_start, cardData.status, cardData.data);
+
+            if(isSuccess){
+                printf("\033[1;32m\r> SUCCESS !   ");
+                printf("\033[0m"); // Reset text attributes to default
+
+                printf("\n=======================\n");
+                getch();
             }
+            // system("cls");
+            // printf("\e[?25h"); // show cursor
+            int choiceAccount = 1; // 0 - max menu's array size
 
-            break;
-            case 0:
-                printf("================ ENDED ================\n");
-                printf("Thank you!\n");
-                return 0;
+            while (1)
+            {
+
+                if (USER_SESSION.isLogin == 0)
+                {
+                    break;
+                }
+
+                choiceAccount = selectMenu(0, ACCOUNT_MENU, displayMenu, "Account Menu"); // 0 - max menu's array size
+                switch (choiceAccount)
+                {
+                case 1:
+                {
+                    displayMenuSwitch();
+                }
                 break;
-            default:
+                case 2:
+                {
+                    USER_ACTION_MENU[1] = USER_SESSION.User->active == 0 ? "Active Card" : "Suspend Card";
+                    USER_ACTION_MENU[2] = USER_SESSION.User->status == 0 ? "Enable Card" : "Disabled Card";
+
+                    int exitUserMenu = selectUserMenu(0, USER_ACTION_MENU, displayUserMenu, "User Action", USER_SESSION.User);
+                }
+
                 break;
+                case 0:
+                    USER_SESSION.isLogin = 0;
+                    printf("================ Logout ================\n");
+                    printf("Thank you!\n");
+                    TRANSACTION_DATA[0] = '\0';
+                    getch();
+                    break;
+                default:
+                    break;
+                }
             }
         }
     }
