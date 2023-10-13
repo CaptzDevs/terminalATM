@@ -94,7 +94,7 @@ int checkPassword(char* storedPassword){
             printf("xxxxxxxxxxxxxxxxxxxxxxxx\n");
             printf("\033[1;0m");
 
-            exit(0);
+            return 0;
         }
         
         printf("> Enter your password: ");
@@ -143,7 +143,7 @@ Login login(char userID[14]){
             return USER_SESSION;
          }else{
             USER_SESSION.isLogin = 0;
-            strcpy(USER_SESSION.loginTime, '\0');
+            strcpy(USER_SESSION.loginTime, "\0");
 
             return USER_SESSION;
          }
@@ -169,21 +169,19 @@ Login loginCard(User* cardData){
 
         strcpy(accID,cardData->accountID);
          isValidPassword = checkPassword(cardData->password);
-         
+
          if(isValidPassword){
 
             USER_SESSION.isLogin = 1;
             strcpy(USER_SESSION.loginTime, getCurrentTime());
 
             USER_SESSION.User = cardData;
-
             USER_SESSION = USER_SESSION;
             saveLoginDataToCSV(LOGIN_LOG_DATA,USER_SESSION,1);
             return USER_SESSION;
-         }else{
+         }else if(isValidPassword){
             USER_SESSION.isLogin = 0;
-            strcpy(USER_SESSION.loginTime, '\0');
-
+            strcpy(USER_SESSION.loginTime, "\0");
             return USER_SESSION;
          }
 

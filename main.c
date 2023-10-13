@@ -67,7 +67,7 @@ char ACCOUNT_MENU[_MENU_SIZE][50] = {
 
 char START_MENU[_MENU_SIZE][50] = {
     "Login",
-    "Login Without Card",
+    "Login With ID",
 };
 
 typedef Card (*OperationCard)();
@@ -203,7 +203,6 @@ int asyncLoadingCircle(int timeoutArg, Operation checkFn)
     return isClearTimeout;
 }
 
-
 Card asyncLoadingCard(int timeoutArg, OperationCard checkFn)
 {
 
@@ -218,21 +217,20 @@ Card asyncLoadingCard(int timeoutArg, OperationCard checkFn)
     char cursor[] = "|/-\\";
     int i = 0;
 
-    while (i < timeout && isClearTimeout.status == 0)
+    while (i <= timeout && isClearTimeout.status == 0)
     {
         printf("%c\b", cursor[i % 4]); // Print the cursor character and move the cursor back
         fflush(stdout);                // Flush the output buffer to ensure immediate printing
         nanosleep(&delay, NULL);
         i++;
-           // Check for Esc key press
+        // Check for Esc key press
         isClearTimeout = checkFn();
-    }
-
-    if (i == timeout)
-    {
-        printf("\nTimeout!");
-        sleep(2);
-        return isClearTimeout;
+        if (i == timeout)
+        {
+            printf("\nTimeout!");
+            sleep(2);
+            return isClearTimeout;
+        }
     }
 
     return isClearTimeout;
@@ -254,7 +252,8 @@ Card insertCard()
 
     isInsertCard = asyncLoadingCard(30, checkInsertCard);
 
-    if(isInsertCard.status == 0){
+    if (isInsertCard.status == 0)
+    {
         return isInsertCard;
     }
     if (isInsertCard.status == 1)
@@ -358,7 +357,7 @@ void moveUp()
 
 int preLoad2(int sleepTime, int choice, int status, User *userData)
 {
-    printf("> Initial                ");
+    printf("> Initial                "); 
     loadingCircle(sleepTime);
     printf("[/] \n");
 
@@ -409,6 +408,10 @@ int preLoad2(int sleepTime, int choice, int status, User *userData)
             strcat(TRANSACTION_DATA, ".csv");
 
             printf(">> %s \n", TRANSACTION_DATA);
+        }
+        else
+        {
+            return 0;
         }
     }
 
@@ -768,18 +771,15 @@ int main()
     Card cardData;
     while (1)
     {
-    displayLogo();
-
-        /* code */
+        system("cls");
+        displayLogo();
 
         int choice_start = selectMenu(0, START_MENU, displayMenu, "Login Method"); // 0 - max menu's array size
 
-          if (choice_start != 0)
+        if (choice_start != 0)
         {
             processCSVToLinkedList(USERS_DATA, 0);
-
         }
-
 
         if (choice_start == 1)
         {
@@ -792,7 +792,8 @@ int main()
 
             int isSuccess = preLoad2(0, choice_start, cardData.status, cardData.data);
 
-            if(isSuccess){
+            if (isSuccess)
+            {
                 printf("\033[1;32m\r> SUCCESS !   ");
                 printf("\033[0m"); // Reset text attributes to default
 

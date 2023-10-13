@@ -91,6 +91,7 @@ Card checkInsertCard()
             }
             else
             {
+                //for new User 
                 userCardData.status = 2;
             }
 

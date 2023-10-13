@@ -19,10 +19,8 @@
 #include "lib/file.c"
 #include "lib/search.c"
 
-
-
-
 // Money Color \033[38;5;48m
+#define LOGIN_ADMIN_LOG_DATA "./log/admin_log.csv"
 
 int space[] = {0, 15, 15, 15, 15, 15};
 
@@ -40,26 +38,21 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
 
 char *createPassword();
 
-int sortByTel(const void* a, const void* b);
+int sortByTel(const void *a, const void *b);
 int getStringInput(char *input, int maxSize);
 int selectUserArray(int min, int max, User *list, selectedArray tableCallBack);
 int selectUserList(int min, int max, selectedList tableCallBack);
 
-
 List displayUserList(int choice, int page);
 List displayUserArray(User *userArray, int arraySize, int choice, int page);
-
 
 UserNode *deleteUser(int id);
 User *editUserData(User *userDetail);
 SearchData searchTel(char tel[10]);
 
-
-
-
 /* ============================ */
 
-/* 
+/*
     //* 2 Type of menu function
    //* 1. Controller Function      [C]
    //* 2. Display Function         [D]
@@ -77,38 +70,36 @@ User *editUserData(User *userDetail)
     char nFname[250];
     char nLname[250];
     char nTel[11];
-    
-    strcpy(nFname, userDetail->fname);
-    strcpy(nLname, userDetail->lname);
-    strcpy(nTel, userDetail->tel);
-
 
     strcpy(nFname, userDetail->fname);
     strcpy(nLname, userDetail->lname);
     strcpy(nTel, userDetail->tel);
 
+    strcpy(nFname, userDetail->fname);
+    strcpy(nLname, userDetail->lname);
+    strcpy(nTel, userDetail->tel);
 
     fflush(stdin);
 
     printf("New First Name : ");
     printf("\033[38;5;75m");
-    strcpy(nFname,getValidateString());
+    strcpy(nFname, getValidateString());
     int lFname = strlen(nFname);
     printf("\033[0m");
     printf("New Last Name : ");
     printf("\033[38;5;75m");
-    strcpy(nLname,getValidateString());
+    strcpy(nLname, getValidateString());
     int lLname = strlen(nLname);
     printf("\033[0m");
 
     printf("New Tel. : ");
     printf("\033[38;5;75m");
 
-    strcpy(nTel,getTel(10));
+    strcpy(nTel, getTel(10));
     int lTel = strlen(nTel);
     printf("\033[0m");
 
-     printf("%d %d %d",lFname,lLname,lTel);
+    printf("%d %d %d", lFname, lLname, lTel);
 
     if (lFname == 0)
         strcpy(nFname, userDetail->fname);
@@ -116,7 +107,6 @@ User *editUserData(User *userDetail)
         strcpy(nLname, userDetail->lname);
     if (lTel < 10)
         strcpy(nTel, userDetail->tel);
-
 
     printf("\n");
     printf("Check new data \n");
@@ -138,28 +128,37 @@ User *editUserData(User *userDetail)
     return userDetail;
 }
 
-char *getValidateString() {
+char *getValidateString()
+{
     const int MAX_LEN = 255;
     char *tel = (char *)malloc((MAX_LEN + 1) * sizeof(char)); // +1 for null terminator
     char ch;
     int i = 0;
 
-    if (tel == NULL) {
+    if (tel == NULL)
+    {
         printf("Memory allocation failed\n");
         return NULL;
     }
 
-    while (i < MAX_LEN) {
+    while (i < MAX_LEN)
+    {
         ch = getch();
 
-        if (ch == BACKSPACE_KEY) {
-            if (i > 0) {
+        if (ch == BACKSPACE_KEY)
+        {
+            if (i > 0)
+            {
                 i--;
                 printf("\b \b");
             }
-        } else if (ch == ENTER_KEY) {
+        }
+        else if (ch == ENTER_KEY)
+        {
             break;
-        } else if (i < MAX_LEN && !(ch >= '0' && ch <= '9')) {
+        }
+        else if (i < MAX_LEN && !(ch >= '0' && ch <= '9'))
+        {
             tel[i] = ch;
             printf("%c", tel[i]);
             i++;
@@ -172,7 +171,8 @@ char *getValidateString() {
     // Now, let's allocate just enough memory to store the actual string.
     char *result = (char *)malloc((i + 1) * sizeof(char)); // +1 for null terminator
 
-    if (result == NULL) {
+    if (result == NULL)
+    {
         printf("Memory allocation failed\n");
         free(tel);
         return NULL;
@@ -343,7 +343,6 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                         case ENTER_KEY:
 
                             saveLinkedListToCSV(USERS_DATA, USER_LIST);
-                            
 
                             printf("=====================================\n");
                             printf("\033[1;32m> Update Data Success \n\033[0m");
@@ -388,7 +387,7 @@ int selectUserMenu(int min, char *arr[], selectedUserMenu displayMenuCallback, c
                             int listSize = getListSize(USER_LIST);
                             int arrSize;
                             USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize);
-                       /*      free(userDetail); */
+                            /*      free(userDetail); */
                             num = 0;
                             break;
                         }
@@ -779,7 +778,6 @@ List displayUserList(int choice, int page)
         userList.currentRow = 0;
         userList.userData = NULL;
         return userList;
-
     }
     else
     {
@@ -1070,7 +1068,7 @@ int selectUserList(int min, int max, selectedList tableCallBack)
 
                         /* USER_ARR = linkedListToArray(USER_LIST, listSize, &arrSize); */
 
-                        processCSVToLinkedList(USERS_DATA,0);
+                        processCSVToLinkedList(USERS_DATA, 0);
 
                         /* selectUserArray(1,arrSize,USER_ARR,displayUserArray); */
 
@@ -1106,7 +1104,6 @@ int selectUserList(int min, int max, selectedList tableCallBack)
             { // Check for Escape key (optional)
                 printf("Escape key pressed\n");
                 printf("EXIT\n");
-
 
                 break;
             }
@@ -1165,7 +1162,7 @@ char *getTel(int pass_len)
     while (i <= PASS_LEN)
     {
         ch = getch();
- 
+
         if (ch == BACKSPACE_KEY)
         {
             if (i > 0)
@@ -1181,33 +1178,36 @@ char *getTel(int pass_len)
             i++;
         }
 
-        if(ch == ENTER_KEY && i < PASS_LEN){
+        if (ch == ENTER_KEY && i < PASS_LEN)
+        {
             tel[0] = '\0';
             break;
         }
-    
-    
-        if(i == PASS_LEN && ch == ENTER_KEY){
+
+        if (i == PASS_LEN && ch == ENTER_KEY)
+        {
             tel[i] = '\0';
             SearchData checkTel = searchTel(tel);
             printf("\n");
 
-            if(checkTel.result == 0){
+            if (checkTel.result == 0)
+            {
                 printf("\033[1;32m");
                 printf("You can use this number [/]");
                 printf("\033[0m");
 
                 break;
-            }else{
+            }
+            else
+            {
                 printf("\033[1;31m");
-                printf("This number (%s) is registed by other account\n",tel);
+                printf("This number (%s) is registed by other account\n", tel);
                 printf("\033[0m");
 
                 printf("Try Again\n");
                 printf("[66+] > ");
 
-
-                i  = 0;
+                i = 0;
             }
         }
     }
@@ -1215,9 +1215,6 @@ char *getTel(int pass_len)
     printf("\n");
     return tel;
 }
-
-
-
 
 User searchUser(User *userArray, int id)
 {
@@ -1332,7 +1329,6 @@ UserNode *deleteUser(int id)
 
     return USER_LIST; // Return the head of the modified list
 }
-
 
 int getRowsByColumn(int index)
 {
@@ -1456,9 +1452,8 @@ User Register(const char id[], const char fname[], const char lname[])
 
     printf("Enter your number \n");
     printf("[66+] > ");
-    
-  
-    strncpy(newUser.tel,  getTel(10) , sizeof(newUser.tel) - 1);
+
+    strncpy(newUser.tel, getTel(10), sizeof(newUser.tel) - 1);
     newUser.tel[sizeof(newUser.tel) - 1] = '\0';
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
@@ -1534,13 +1529,6 @@ void generateRandomUserData(User *u)
     /*   u->age = 18 + rand() % 43; */
 }
 
-
-
-
-
-
-
-
 char *createPassword()
 {
 
@@ -1566,7 +1554,49 @@ char *createPassword()
     }
 }
 
+int checkPassword(char* storedPassword){
+    //Validate Password
 
+    printf("> Enter your password: ");
+
+    char *password = getPassword(6);
+    int checkPassword = 1;
+
+    while (checkPassword <= 3 && strcmp(password,storedPassword) != 0)
+    {
+
+        /* system("cls"); */
+      /*   printf("\nchecking...");
+        loadingCircle(2); */
+
+        printf("\033[1;91m");
+        printf("\rWrong Password %d times Try again\n",checkPassword);
+        printf("\033[1;0m");
+        
+
+        if(checkPassword == 3){
+            printf("\033[1;91m\n\033[1F");
+            printf("xxxxxxxxxxxxxxxxxxxxxxxx\n");
+            printf("Wrong Password 3 Times\n");
+            printf("Exit Program\n");
+            printf("xxxxxxxxxxxxxxxxxxxxxxxx\n");
+            printf("\033[1;0m");
+
+            return 0;
+        }
+        
+        printf("> Enter your password: ");
+        password = getPassword(6);
+        checkPassword++;
+
+
+    }
+
+        if(strcmp(password,storedPassword) == 0){
+            printf("\033[1;32m \r| Password CORRECT [/]        \033[1;0m\n");
+            return 1;
+        }
+}
 
 
 int main(int argc, char const *argv[])
@@ -1577,21 +1607,31 @@ int main(int argc, char const *argv[])
     {
         system("cls");
     }
+        saveLoginAdminDataToCSV(LOGIN_ADMIN_LOG_DATA);
 
-    struct tm *localTime;
-    time(&lastestTime);
-    localTime = localtime(&lastestTime);
 
-    printf("Program started at: %s", asctime(localTime));
-
-    Table userData = processCSVToLinkedList(USERS_DATA, 1);
+    int isValidPassword = checkPassword("111111");
     
-    /* User registeredUser = Register("1909300007092", "Captain", "Siwakron"); */
-    getch();
+    if (isValidPassword)
+    {
+        struct tm *localTime;
+        time(&lastestTime);
+        localTime = localtime(&lastestTime);
 
-    userData = processCSVToLinkedList(USERS_DATA, 1);
-    selectUserList(1, USER_ARR_SIZE, displayUserList);
+        printf("Program started at: %s", asctime(localTime));
 
+        Table userData = processCSVToLinkedList(USERS_DATA, 1);
+
+        /* User registeredUser = Register("1909300007092", "Captain", "Siwakron"); */
+        getch();
+
+        userData = processCSVToLinkedList(USERS_DATA, 1);
+        selectUserList(1, USER_ARR_SIZE, displayUserList);
+
+
+    }else{
+        printf("Invalid Password \n");
+    }
     getch();
     return 0;
 }

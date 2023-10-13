@@ -124,6 +124,24 @@ void saveLoginDataToCSV(const char *filename, Login loginData,int type)
     fclose(file);
 }
 
+void saveLoginAdminDataToCSV(const char *filename)
+{
+      struct tm *localTime;
+        time(&lastestTime);
+        localTime = localtime(&lastestTime);
+
+    FILE *file = fopen(filename, "a");
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    fprintf(file, "%s\n",asctime(localTime));
+
+    fclose(file);
+}
+
 
 void saveLinkedListToCSV(const char *filename, UserNode *head)
 {
