@@ -1607,7 +1607,6 @@ int main(int argc, char const *argv[])
     {
         system("cls");
     }
-        saveLoginAdminDataToCSV(LOGIN_ADMIN_LOG_DATA);
 
 
     int isValidPassword = checkPassword("111111");
@@ -1617,6 +1616,8 @@ int main(int argc, char const *argv[])
         struct tm *localTime;
         time(&lastestTime);
         localTime = localtime(&lastestTime);
+
+        saveLoginAdminDataToCSV(LOGIN_ADMIN_LOG_DATA);
 
         printf("Program started at: %s", asctime(localTime));
 

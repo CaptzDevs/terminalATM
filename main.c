@@ -82,6 +82,51 @@ void displayLogo();
 
 /* Utililies Function */
 
+void displayMenuMethod(int choice, char arr[][50], char header[])
+{
+    if (_RFMENU)
+        system("cls");
+
+    char(*optionPtr)[50];
+    int optionIndex = 1;
+    optionPtr = &arr[0];
+
+    displayLogo();
+    printf("%s :\n", header);
+
+    while (*optionPtr[0] != '\0')
+    {
+        if (choice == optionIndex)
+            printf("\033[1;32m> \033[4m");
+
+        printf("[%d] : %s\n", optionIndex, *optionPtr);
+
+        if (choice == optionIndex)
+            printf("\033[0m");
+
+        /*if(choice == 1 && optionIndex == 1){
+              printf(" - Hello 1 \n");
+              printf(" - Hello 1 \n");
+              printf(" - Hello 1 \n");
+          } */
+
+        optionPtr++;
+        optionIndex++;
+    }
+
+  /*   if (choice == 0)
+    {
+        printf("\033[1;32m> \033[4m");
+    }
+    printf("[0] : Quit\n");
+    if (choice == 0)
+    {
+        printf("\033[0m");
+    } */
+
+    printf("\n \033[38;5;50m( Use Arrow and Enter for Select ) \033[0m \n");
+}; // Print the list of Menu
+
 void displayMenu(int choice, char arr[][50], char header[])
 {
     if (_RFMENU)
@@ -765,7 +810,7 @@ int main()
 {
     /*    system("cls");  */
     printf("\a");
-    getch();
+    /* getch(); */
 
     printf("\033[?25l"); // hide cursor
     Card cardData;
@@ -774,7 +819,7 @@ int main()
         system("cls");
         displayLogo();
 
-        int choice_start = selectMenu(0, START_MENU, displayMenu, "Login Method"); // 0 - max menu's array size
+        int choice_start = selectMenu(0, START_MENU, displayMenuMethod, "Login Method"); // 0 - max menu's array size
 
         if (choice_start != 0)
         {

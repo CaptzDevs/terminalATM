@@ -1058,6 +1058,65 @@ char *getTel(int pass_len)
     return tel;
 }
 
+
+char *getTel2(int pass_len)
+{
+    const int PASS_LEN = pass_len;
+    char *tel = (char *)malloc((PASS_LEN + 1) * sizeof(char)); // +1 for null terminator
+    char ch;
+    int i = 0;
+
+    while (i <= PASS_LEN)
+    {
+        ch = getch();
+
+        if (ch == BACKSPACE_KEY)
+        {
+            if (i > 0)
+            {
+                i--;
+                printf("\b \b");
+            }
+        }
+        else if (ch >= '0' && ch <= '9' && i < PASS_LEN)
+        { // Only accept numeric characters and up to 6 digits
+            tel[i] = ch;
+            printf("%c", tel[i]);
+            i++;
+        }
+
+
+        if (i == PASS_LEN && ch == ENTER_KEY)
+        {
+            tel[i] = '\0';
+            SearchData checkTel = searchTel(tel);
+            printf("\n");
+
+            if (checkTel.result == 0)
+            {
+                printf("\033[1;32m");
+                printf("You can use this number [/]");
+                printf("\033[0m");
+
+                break;
+            }
+            else
+            {
+                printf("\033[1;31m");
+                printf("This number (%s) is registed by other account\n", tel);
+                printf("\033[0m");
+
+                printf("Try Again\n");
+                printf("[66+] > ");
+
+                i = 0;
+            }
+        }
+    }
+
+    printf("\n");
+    return tel;
+}
 User searchUser(User *userArray, int id)
 {
 
@@ -1295,7 +1354,7 @@ User Register(const char id[], const char fname[], const char lname[])
     printf("Enter your number \n");
     printf("[66+] > ");
 
-    strncpy(newUser.tel, getTel(10), sizeof(newUser.tel) - 1);
+    strncpy(newUser.tel, getTel2(10), sizeof(newUser.tel) - 1);
     newUser.tel[sizeof(newUser.tel) - 1] = '\0';
 
     strncpy(newUser.registerTime, getCurrentTime(), sizeof(newUser.registerTime) - 1);
